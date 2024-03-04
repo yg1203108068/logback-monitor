@@ -74,16 +74,15 @@ public class Log {
         } else {
             stackTraceBytes = new byte[0];
         }
-        int size = 1
+        int size = 1   // 日志级别
                 + 4 + loggerNameBytes.length
                 + 4 + threadNameBytes.length
-                + 8
+                + 8  // 时间戳
                 + 4 + messageBytes.length
                 + stackTraceBytes.length;
-        int payloadLen = 4 + size;
-        ByteBuffer buffer = ByteBuffer.allocate(payloadLen);
-        buffer.putInt(payloadLen)
-                .put(level.getSignificantBit())
+        ByteBuffer buffer = ByteBuffer.allocate(4 + size);
+        buffer.putInt(size)
+                .put(level.code)
                 .putInt(loggerNameBytes.length)
                 .put(loggerNameBytes)
                 .putInt(threadNameBytes.length)
@@ -110,10 +109,10 @@ public class Log {
         INFO_INT(4),    //00100
         DEBUG_INT(2),   //00010
         TRACE_INT(1);   // 00001
-        private final int code;
+        private final byte code;
 
         LogLevel(int code) {
-            this.code = code;
+            this.code = (byte)code;
         }
 
         /**
@@ -138,17 +137,6 @@ public class Log {
                 return TRACE_INT;
             }
             throw new LogLevelMismatch(level);
-        }
-
-        /**
-         * 获取有效位
-         *
-         * @return 有效的5位字节
-         * @date 2024/3/4
-         * @author YangGang
-         */
-        public byte getSignificantBit() {
-            return (byte)(code >> (32 - 5));
         }
     }
 

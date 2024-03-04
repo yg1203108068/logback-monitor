@@ -2,6 +2,9 @@ package com.javayg.log.monitor.common.component;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
+import com.javayg.log.monitor.common.entity.log.Log;
+import com.javayg.log.monitor.common.entity.vo.OutputVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.FluxSink;
@@ -35,7 +38,7 @@ public class WebLogRepeater extends OutputStream {
         }
         clients.put(id, client);
         timer.put(id, System.currentTimeMillis());
-        log.info("添加客户端ID:{},当前客户端总数{}", id, clients.size());
+        log.info("添加客户端ID:{},当前显示客户端总数{}", id, clients.size());
     }
 
     public void removeClient(String endMsg, String id) {
@@ -52,9 +55,15 @@ public class WebLogRepeater extends OutputStream {
     public void write(int b) {
     }
 
-    @Override
-    public void write(byte[] b) {
-        String msg = new String(b).replaceAll("(\\r\\n|\\n|\\n\\r)", "<br>");
+    /**
+     * 输出信息
+     *
+     * @param vo 被输出的对象
+     * @date 2024/3/4
+     * @author YangGang
+     * @description
+     */
+    public void write(OutputVO vo) {
         if (CollectionUtil.isNotEmpty(clients.values())) {
             Iterator<String> iterator = clients.keySet().iterator();
             while (iterator.hasNext()) {
@@ -63,10 +72,25 @@ public class WebLogRepeater extends OutputStream {
                 if (System.currentTimeMillis() - timer.get(clientId) > 1800000) {
                     removeClient(clientId + "链接已经超过30分钟,自动断开链接,如有需要请重新打开链接", clientId);
                 } else {
-                    clients.get(clientId).next(msg);
+                    clients.get(clientId).next(JSONUtil.toJsonStr(vo));
                 }
             }
         }
+    }
+
+    /**
+     * 处理日志信息
+     *
+     * @param logInfo 日志信息
+     * @date 2024/3/4
+     * @author YangGang
+     * @description
+     */
+    public void logHandler(Log logInfo) {
+        OutputVO vo = new OutputVO();
+        vo.setStatus(200);
+        vo.setData(logInfo);
+        write(vo);
     }
 
     @Override
@@ -77,10 +101,34 @@ public class WebLogRepeater extends OutputStream {
         super.close();
     }
 
-    //    public static WebLogRepeater getInstance() {
-    //        if (outputStream == null) {
-    //            outputStream = new WebLogRepeater();
-    //        }
-    //        return outputStream;
-    //    }
+    /**
+     * 推送一个错误
+     *
+     * @param msg 错误信息
+     * @date 2024/3/4
+     * @author YangGang
+     * @description
+     */
+    public void error(String msg) {
+        OutputVO vo = new OutputVO();
+        vo.setStatus(500);
+        vo.setMsg(msg);
+        write(vo);
+    }
+
+    /**
+     * 推送一个警告
+     *
+     * @param msg 警告信息
+     * @date 2024/3/4
+     * @author YangGang
+     * @description
+     */
+    public void warn(String msg) {
+        OutputVO vo = new OutputVO();
+        vo.setStatus(501);
+        vo.setMsg(msg);
+        write(vo);
+    }
+
 }

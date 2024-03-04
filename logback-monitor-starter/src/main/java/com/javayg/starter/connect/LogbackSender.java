@@ -1,12 +1,14 @@
 package com.javayg.starter.connect;
 
-import ch.qos.logback.core.spi.ContextAware;
+import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import com.javayg.starter.entity.Command;
 import com.javayg.starter.entity.Log;
+import com.javayg.starter.exception.FixSocketException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 /**
  * 日志事件发送器
@@ -20,14 +22,16 @@ public class LogbackSender {
     private Integer port;
     private Socket socket;
     private boolean enable = false;
-    WebLogOutput outputStream;
+    OutputStream outputStream;
     // 用于输出组件相关的信息
-    private final ContextAware appender;
+    private final UnsynchronizedAppenderBase appender;
+    // 推送出错是 这里变成 true，并检查原因重新连接
+    private boolean fixing = false;
 
     /**
      * 构造数据发送器
      */
-    public LogbackSender(ContextAware appender) {
+    public LogbackSender(UnsynchronizedAppenderBase appender) {
         this.appender = appender;
     }
 
@@ -44,10 +48,27 @@ public class LogbackSender {
             appender.addWarn("准备推送，但没有可用的Socket，丢弃的日志：" + log.toString());
             return;
         }
+        if (fixing) {
+            return;
+        }
         try {
+            outputStream.write(Command.LOG.getCode());
             outputStream.write(log.payload());
+            outputStream.flush();
         } catch (IOException e) {
+            fixing = true;
             appender.addWarn("推送 日志数据到 分析平台时出现了异常，日志已丢弃：" + log);
+            new Thread(() -> {
+                try {
+                    fixSocket();
+                } catch (IOException | InterruptedException ex) {
+                    appender.addWarn("socket 修复失败,无法重建连接");
+                    appender.stop();
+                } catch (FixSocketException ex) {
+                    appender.addWarn(ex.getMessage());
+                    appender.stop();
+                }
+            }).start();
         }
     }
 
@@ -76,8 +97,9 @@ public class LogbackSender {
         appender.addInfo("初始化Socket");
         // 初始化连接
         try {
-            socket = new Socket("localhost", 8733);
-            outputStream = new WebLogOutput(socket.getOutputStream());
+            socket = new Socket(host, port);
+            outputStream = socket.getOutputStream();
+            // todo 注册： 发送 stater 版本号、服务名称、检查版本是否兼容，服务是否重复
         } catch (IOException e) {
             appender.addError("建立连接失败，请确保服务端已启动 " + e.getMessage());
             return false;
@@ -87,14 +109,9 @@ public class LogbackSender {
             InputStream inputStream = socket.getInputStream();
             new Thread(() -> {
                 try {
-                    byte[] bytes = new byte[1024];
-                    int len = inputStream.read(bytes);
-                    byte[] strBytes = new byte[len];
-                    System.arraycopy(bytes, 0, strBytes, 0, len);
-                    String fromServer = new String(strBytes, StandardCharsets.UTF_8);
-                    System.out.println("fromServer=>" + fromServer);
-                    if (fromServer.equals("SHUTDOWN")) {
-                        outputStream.write(0);
+                    byte read = (byte)inputStream.read();
+                    if (read == Command.SHUTDOWN.getCode()) {
+                        outputStream.write(Command.SHUTDOWN.getCode());
                         socket.close();
                     }
                 } catch (IOException e) {
@@ -117,9 +134,35 @@ public class LogbackSender {
      */
     public void stop() {
         try {
+            outputStream.write(Command.SHUTDOWN.getCode());
             socket.close();
         } catch (IOException e) {
             appender.addError("关闭连接失败 " + e.getMessage());
         }
+    }
+
+    /**
+     * 尝试修复连接
+     *
+     * @throws IOException
+     * @throws InterruptedException
+     * @date 2024/3/4
+     * @author YangGang
+     * @description
+     */
+    private void fixSocket() throws IOException, InterruptedException, FixSocketException {
+        boolean unavailable = socket.isOutputShutdown() || socket.isInputShutdown() || (!socket.isConnected()) || (!socket.isClosed()) || (!socket.isBound());
+        if (!unavailable) {
+            return;
+        }
+        socket.close();
+        for (int i = 0; i < 100; i++) {
+            if (initSocket()) {
+                fixing = false;
+                return;
+            }
+            Thread.sleep(3000);
+        }
+        throw new FixSocketException("5分钟内尝试了100次，远程日志分析平台没有连接成功");
     }
 }

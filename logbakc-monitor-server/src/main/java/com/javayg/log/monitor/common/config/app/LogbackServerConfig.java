@@ -2,6 +2,7 @@ package com.javayg.log.monitor.common.config.app;
 
 import com.javayg.log.monitor.common.component.ClientCloseCallBack;
 import com.javayg.log.monitor.common.component.LogConnect;
+import com.javayg.log.monitor.common.component.LogParsing;
 import com.javayg.log.monitor.common.component.WebLogRepeater;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -28,6 +29,8 @@ public class LogbackServerConfig {
     List<LogConnect> clients = new LinkedList<>();
     private final ClientCloseCallBack clientCloseCallBack = client -> clients.remove(client);
     boolean connected = true;
+    @Autowired
+    LogParsing resolve;
 
     @PostConstruct
     public void startServerSocketReceiver() throws IOException {
@@ -35,11 +38,10 @@ public class LogbackServerConfig {
         new Thread(() -> {
 
             while (connected) {
-                System.out.println(0);
-                log.info("检测--》");
+                log.info("等待客户端日志推送器连接...");
                 try {
                     Socket connect = socket.accept();
-                    LogConnect client = new LogConnect(connect, webLogRepeater, clientCloseCallBack);
+                    LogConnect client = new LogConnect(connect, webLogRepeater, clientCloseCallBack, resolve);
                     client.start();
                     clients.add(client);
                 } catch (SocketException e) {
