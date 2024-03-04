@@ -1,3 +1,0 @@
-# Logback
-org.springframework.context.ApplicationListener=\
-    com.javayg.starter.logback.RemoteLogbackMonitorConfigurator
