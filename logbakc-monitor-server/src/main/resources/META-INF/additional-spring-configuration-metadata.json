@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "permitAll.url",
+      "type": "java.lang.String[]",
+      "description": "放行的URL."
+    },
+    {
+      "name": "url-access-limit.anonymous",
+      "type": "java.lang.String",
+      "description": "允许匿名访问."
+    },
+    {
+      "name": "url-access-limit.permitAll",
+      "type": "java.lang.String",
+      "description": "放行."
+    }
+  ]
+}

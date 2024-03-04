@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: logback-monitor
+  datasource:
+    url: jdbc:mysql://localhost:3306/logback_monitor
+    username: root
+    password: yg123456***
+  mvc:
+    log-request-details: true
+  jpa:
+    show-sql: true
+  web:
+    resources:
+      static-locations: classpath:/root
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
+    encoding:
+      charset: utf-8
+url-access-limit:
+  permitAll:
+    - /
+    - /error
+    - /index.html
+    - /favicon.ico
+    - /asset-manifest.json
+    - /static/**
+    - /api/file/**
+    - /log
+    - /user
+  anonymous:
+    - /api/login
+    - /api/username/*
+  authenticated:
+    - /api/menu
+    - /api/nickname
+    - /api/info/*
+    - /api/token
+    - /api/password
+    - /api/upload
+    - /api/logout
+    - /api/log/*
+    - /api/user/*
+initPassword: 123456
+uploadDir: upload
+trace: false
+logServer:
+  port: 8733

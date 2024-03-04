@@ -1,0 +1,38 @@
+.custom-scrollbar-container {
+    overflow-y: auto;
+    /*overflow-y: hidden;*/
+}
+
+/*滚动条整体*/
+.custom-scrollbar-container::-webkit-scrollbar {
+    width: 5px;
+}
+
+/*轨道*/
+.custom-scrollbar-container::-webkit-scrollbar-track {
+    background-color: rgb(239, 239, 239);
+    border-radius: 2px;
+}
+
+/*滑块*/
+.custom-scrollbar-container::-webkit-scrollbar-thumb {
+    background-color: #40a0ff49;
+    border-radius: 10px;
+}
+
+.custom-scrollbar-container:hover {
+    overflow-y: auto;
+}
+
+.custom-scrollbar-container::-webkit-scrollbar:hover {
+    width: 10px;
+}
+
+.custom-scrollbar-container::-webkit-scrollbar-thumb:hover {
+    background-color: #40a0ff49;
+    border-radius: 2px;
+}
+
+.custom-scrollbar-container::-webkit-scrollbar-thumb:hover {
+    background-color: #40a0ff;
+}

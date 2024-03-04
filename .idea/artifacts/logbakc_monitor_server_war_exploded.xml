@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="logbakc-monitor-server:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/logbakc_monitor_server_war_exploded</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="logbakc-monitor-server/web/Web" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="logbakc-monitor-server" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>
