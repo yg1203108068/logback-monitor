@@ -17,7 +17,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
  *
  * @author YangGang
  * @date 2024/3/3
- * @description 提供 Logback 的 远程分析平台的 配置,注册在 META-INF/services 中
+ * @description 在应用程序初始化时，创建追加器并启动
  */
 public class RemoteLogbackMonitorConfigurator implements GenericApplicationListener {
     @Override
