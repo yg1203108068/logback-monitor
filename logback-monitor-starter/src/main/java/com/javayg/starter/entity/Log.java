@@ -104,10 +104,25 @@ public class Log {
      * @date 2024/3/1
      */
     public enum LogLevel {
+        /**
+         * ERROR
+         */
         ERROR_INT(16),  //10000
+        /**
+         * WARN
+         */
         WARN_INT(8),    //01000
+        /**
+         * INFO
+         */
         INFO_INT(4),    //00100
+        /**
+         * DEBUG
+         */
         DEBUG_INT(2),   //00010
+        /**
+         * TRACE
+         */
         TRACE_INT(1);   // 00001
         private final byte code;
 

@@ -1,5 +1,6 @@
 package com.javayg.starter.connect;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import com.javayg.starter.entity.Command;
 import com.javayg.starter.entity.Log;
@@ -24,14 +25,16 @@ public class LogbackSender {
     private boolean enable = false;
     OutputStream outputStream;
     // 用于输出组件相关的信息
-    private final UnsynchronizedAppenderBase appender;
+    private final UnsynchronizedAppenderBase<ILoggingEvent> appender;
     // 推送出错是 这里变成 true，并检查原因重新连接
     private boolean fixing = false;
 
     /**
      * 构造数据发送器
+     *
+     * @param appender 需要一个 Appender 用于记录启动阶段的信息
      */
-    public LogbackSender(UnsynchronizedAppenderBase appender) {
+    public LogbackSender(UnsynchronizedAppenderBase<ILoggingEvent> appender) {
         this.appender = appender;
     }
 
@@ -75,8 +78,10 @@ public class LogbackSender {
     /**
      * 启动数据发送器
      *
+     * @param host 地址
+     * @param port 端口
      * @return 返回true表示连接已成功建立，否则表示连接不可用
-     * @date 2024/3/3
+     * @date 2024/3/5
      * @author YangGang
      * @description 建立与服务端的连接
      */
@@ -144,8 +149,6 @@ public class LogbackSender {
     /**
      * 尝试修复连接
      *
-     * @throws IOException
-     * @throws InterruptedException
      * @date 2024/3/4
      * @author YangGang
      * @description

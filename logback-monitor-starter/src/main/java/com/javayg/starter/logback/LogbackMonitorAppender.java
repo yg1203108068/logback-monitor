@@ -22,6 +22,8 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
 
     /**
      * 构造 Logback 日志数据 分析平台追加器
+     *
+     * @param properties 分析平台相关配置
      */
     public LogbackMonitorAppender(MonitorProperties properties) {
         setName("LogbackMonitorAppender");
