@@ -81,7 +81,7 @@ public class Log {
                 + 4 + messageBytes.length
                 + stackTraceBytes.length;
         ByteBuffer buffer = ByteBuffer.allocate(4 + size);
-        buffer.putInt(size)
+        buffer.putInt(size) // 先在负载的头部放一个4个字节的int值，这个值表示了消息体的长度
                 .put(level.code)
                 .putInt(loggerNameBytes.length)
                 .put(loggerNameBytes)

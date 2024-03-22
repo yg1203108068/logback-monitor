@@ -2,11 +2,16 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/../../maven/repository/org/springframework/boot/spring-boot-starter-parent/3.0.2/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/logback-monitor-server-test/server1/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/logback-monitor-server-test/server1/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/logback-monitor-server-test/server2/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/logback-monitor-server-test/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/logback-monitor-server-test/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/logback-monitor-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/logback-monitor-starter-test/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/logback-monitor-starter-test/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/logback-monitor-starter/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/logback-monitor-starter/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/logbakc-monitor-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/server/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />

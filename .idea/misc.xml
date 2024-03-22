@@ -15,6 +15,8 @@
         <option value="$PROJECT_DIR$/logback-monitor-starter-test/pom.xml" />
         <option value="$PROJECT_DIR$/spring-starter-test/pom.xml" />
         <option value="$PROJECT_DIR$/t1/pom.xml" />
+        <option value="$PROJECT_DIR$/logback-monitor-server-test/pom.xml" />
+        <option value="$PROJECT_DIR$/logback-monitor-server/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

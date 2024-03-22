@@ -2,9 +2,9 @@ package com.javayg.starter.connect;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import com.javayg.starter.entity.Command;
-import com.javayg.starter.entity.Log;
+import com.javayg.starter.entity.*;
 import com.javayg.starter.exception.FixSocketException;
+import com.javayg.starter.exception.ResponseUnknownException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,12 +30,18 @@ public class LogbackSender {
     private boolean fixing = false;
 
     /**
+     * 本地服务的相关信息
+     */
+    private final LocalServerCache localServerCache;
+
+    /**
      * 构造数据发送器
      *
      * @param appender 需要一个 Appender 用于记录启动阶段的信息
      */
-    public LogbackSender(UnsynchronizedAppenderBase<ILoggingEvent> appender) {
+    public LogbackSender(UnsynchronizedAppenderBase<ILoggingEvent> appender, LocalServerCache localServerCache) {
         this.appender = appender;
+        this.localServerCache = localServerCache;
     }
 
     /**
@@ -104,22 +110,37 @@ public class LogbackSender {
         try {
             socket = new Socket(host, port);
             outputStream = socket.getOutputStream();
-            // todo 注册： 发送 stater 版本号、服务名称、检查版本是否兼容，服务是否重复
+            // 注册： 发送 stater 版本号、服务名称
+            outputStream.write(Command.REGISTER.getCode());
+            outputStream.write(new RegistrationParams(localServerCache.getServerName()).payload());
         } catch (IOException e) {
             appender.addError("建立连接失败，请确保服务端已启动 " + e.getMessage());
             return false;
         }
 
+        // 检查： 注册是否成功
         try {
             InputStream inputStream = socket.getInputStream();
             new Thread(() -> {
                 try {
-                    byte read = (byte)inputStream.read();
+                    byte read = (byte) inputStream.read();
+                    // 关闭
                     if (read == Command.SHUTDOWN.getCode()) {
                         outputStream.write(Command.SHUTDOWN.getCode());
                         socket.close();
                     }
-                } catch (IOException e) {
+                    // 注册
+                    else if (read == Command.REGISTER.getCode()) {
+                        // 状态码
+                        int code = inputStream.read();
+                        if (code == Status.SUCCESS.getCode()) {
+                            appender.addInfo("与日志监控服务器已建立连接");
+                        } else {
+                            Response response = new Response(inputStream);
+                            appender.addWarn("与日志监控服务器建立连接是失败，错误码：" + response.getStatus().getCode() + "，内容：" + response.getMsg().getContent());
+                        }
+                    }
+                } catch (IOException | ResponseUnknownException e) {
                     appender.addError("与日志监控服务器的连接出现异常 " + e.getMessage());
                 }
             }).start();
@@ -154,10 +175,7 @@ public class LogbackSender {
      * @description
      */
     private void fixSocket() throws IOException, InterruptedException, FixSocketException {
-        boolean unavailable = socket.isOutputShutdown() || socket.isInputShutdown() || (!socket.isConnected()) || (!socket.isClosed()) || (!socket.isBound());
-        if (!unavailable) {
-            return;
-        }
+        appender.addInfo("尝试重建 Socket 连接");
         socket.close();
         for (int i = 0; i < 100; i++) {
             if (initSocket()) {

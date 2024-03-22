@@ -8,7 +8,6 @@ import {WindowBasicProp} from "../constant/commonEnum";
 export default class AppLeftNav extends React.Component<{ currFullNav: any[], onChange: (item: any)=>void }> {
 
     render() {
-        console.log("window[WindowBasicProp].menu={}", window[WindowBasicProp].menu)
         const {currFullNav} = this.props
         let defaultSelectedKeys = "MENU_ITEM_" + currFullNav[currFullNav.length - 1].key;
         let defaultOpenKeys = [];

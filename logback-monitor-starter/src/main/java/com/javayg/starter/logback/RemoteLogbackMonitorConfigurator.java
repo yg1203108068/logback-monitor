@@ -2,6 +2,7 @@ package com.javayg.starter.logback;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import com.javayg.starter.entity.LocalServerCache;
 import com.javayg.starter.entity.MonitorProperties;
 import com.javayg.starter.exception.ClientException;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,8 @@ public class RemoteLogbackMonitorConfigurator implements GenericApplicationListe
         Logger log = loggerContext.getLogger("ROOT");
 
         MonitorProperties properties = new MonitorProperties(environment);
-        LogbackMonitorAppender logbackMonitorAppender = new LogbackMonitorAppender(properties);
+        LocalServerCache localServerInfo = new LocalServerCache(environment);
+        LogbackMonitorAppender logbackMonitorAppender = new LogbackMonitorAppender(properties,localServerInfo);
         logbackMonitorAppender.setContext(loggerContext);
         try {
             logbackMonitorAppender.start();

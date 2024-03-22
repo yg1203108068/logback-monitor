@@ -3,6 +3,7 @@ package com.javayg.starter.logback;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import com.javayg.starter.connect.LogbackSender;
+import com.javayg.starter.entity.LocalServerCache;
 import com.javayg.starter.entity.Log;
 import com.javayg.starter.entity.MonitorProperties;
 import com.javayg.starter.exception.ClientException;
@@ -16,24 +17,41 @@ import com.javayg.starter.exception.ClientException;
  */
 public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
+    /**
+     * 加载当前系统中对监视器的配置信息
+     */
     MonitorProperties properties;
+    /**
+     * 本地服务的信息
+     */
+    LocalServerCache localServerCache;
 
+    /**
+     * 定义一个发送器用来将日志发送到远端服务器
+     */
     private LogbackSender sender;
 
     /**
      * 构造 Logback 日志数据 分析平台追加器
      *
-     * @param properties 分析平台相关配置
+     * @param properties      分析平台相关配置
+     * @param localServerCache 本地服务信息缓存
      */
-    public LogbackMonitorAppender(MonitorProperties properties) {
+    public LogbackMonitorAppender(MonitorProperties properties, LocalServerCache localServerCache) {
         setName("LogbackMonitorAppender");
         this.properties = properties;
+        this.localServerCache = localServerCache;
     }
 
 
+    /**
+     * 启动远端日志追加器的方法，通过调用启动方法，使远端追加器生效
+     * @date 2024/3/19
+     * @author YangGang
+     */
     @Override
     public void start() {
-        this.sender = new LogbackSender(this);
+        this.sender = new LogbackSender(this,localServerCache);
         boolean start = sender.start(properties.getHost(), properties.getPort());
         if (!start) {
             addError("日志监控推送 Appender 启动失败");
