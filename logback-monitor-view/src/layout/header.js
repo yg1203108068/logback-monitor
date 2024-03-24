@@ -1,7 +1,7 @@
 import React from 'react';
 import {CloudServerOutlined, LoginOutlined, SettingOutlined, UserOutlined} from "@ant-design/icons";
 import {axiosUtils} from "../utils/axiosUtils";
-import {Dropdown, Form, Input, message, Modal, Skeleton} from "antd"
+import {Dropdown, Form, Input, message, Modal, Skeleton,Typography} from "antd"
 import {LoginSign} from "../constant/commonEnum";
 import PubSub from "pubsub-js";
 import {JSEncrypt} from "jsencrypt";
@@ -134,7 +134,7 @@ export default class AppHeader extends React.Component {
     render() {
         const {loading, nickname, isModalOpen} = this.state;
         return (
-            <div style={{fontSize: "22px"}}>
+            <Typography style={{fontSize: "22px"}}>
                 <a href="/"><CloudServerOutlined/></a>
 
                 <span style={{paddingLeft: "20px"}}>开发者选项<span style={{fontSize: "16px"}}>&nbsp;V&nbsp;{process.env.APP_VERSION}</span></span>
@@ -205,7 +205,7 @@ export default class AppHeader extends React.Component {
                         </Form.Item>
                     </Form>
                 </Modal>
-            </div>
+            </Typography>
         );
     }
 

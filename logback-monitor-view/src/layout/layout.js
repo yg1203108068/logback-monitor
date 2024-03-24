@@ -1,11 +1,13 @@
 import React, {Component} from 'react';
-import {Layout} from 'antd';
+import {Divider, Layout, theme} from 'antd';
 import {navTreeNodeArr} from "../constant/navMenu";
 import {getAllAttrOfAllDepth} from "../utils/treeUtils";
 import AppLeftNav from "./appLeftNav";
 import AppHeader from "./header";
 import AppBreadcrumb from "./breadcrumb";
 import {Route, Routes} from "react-router-dom";
+
+const {getDesignToken} = theme;
 
 const {Header, Content, Sider} = Layout;
 export default class AppLayout extends Component {
@@ -25,6 +27,9 @@ export default class AppLayout extends Component {
         } else {
             this.currFullNav = [navTreeNodeArr[0]];
         }
+        const globalToken = getDesignToken();
+        this.state.colorBgContainer = globalToken.colorBgContainer
+        this.state.borderRadiusLG = globalToken.borderRadiusLG
     }
 
     state = {
@@ -32,7 +37,9 @@ export default class AppLayout extends Component {
         appBreadcrumbKey: "",
         switchEnv: "success",
         checkEnvBtnLoading: false,
-        percent: 0
+        percent: 0,
+        colorBgContainer: undefined,
+        borderRadiusLG: undefined,
     }
 
 
@@ -68,7 +75,7 @@ export default class AppLayout extends Component {
      * @constructor
      */
     mainLayout = (appBreadcrumbKey) => {
-        const {collapsed} = this.state
+        const {collapsed, colorBgContainer, borderRadiusLG} = this.state
         return <Layout>
             <Sider
                 collapsible={true}
@@ -80,12 +87,14 @@ export default class AppLayout extends Component {
                 <AppLeftNav currFullNav={this.currFullNav} onChange={this.changeNav}/>
             </Sider>
             <Layout style={{height: "100%"}}>
-                <Header style={{backgroundColor: "#fff", lineHeight: "45px", height: "45px"}}>
+
+                <Header style={{lineHeight: "45px", height: "45px", background: colorBgContainer}}>
                     <AppHeader/>
                 </Header>
                 <AppBreadcrumb key={appBreadcrumbKey} style={{margin: '16px 16px'}} currNav={this.currFullNav}/>
-                <Content style={{margin: '0 16px 16px', height: "100%",}}>
-                    <div style={{backgroundColor: "#fff", padding: 24, height: "100%", overflowX: "hidden"}}
+                <Divider style={{marginTop:0,marginBottom:0}}/>
+                <Content style={{margin: '0 16px 16px', height: "100%", borderRadius: borderRadiusLG}}>
+                    <div style={{padding: 24, height: "100%", overflowX: "hidden"}}
                          className={"custom-scrollbar-container"}>
                         <Routes>
                             {navTreeNodeArr.map(item =>

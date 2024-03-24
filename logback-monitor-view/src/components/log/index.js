@@ -5,28 +5,28 @@ import {BarsOutlined, DeleteOutlined, LinkOutlined, VerticalAlignBottomOutlined}
 const {Paragraph, Text} = Typography;
 export type Log = {
     key: number,
-    time: string,
-    loggerName: string,
-    level: string,
-    threadName: string,
-    timeStamp: number,
+    time?: string,
+    loggerName?: string,
+    level?: number,
+    threadName?: string,
+    timeStamp?: number,
     message: string,
-    stackTrace: string,
+    stackTrace?: string,
 }
 
-const STATUS = {
+export const STATUS = {
     SUCCESS: 200,
     ERROR: 500,
     WARN: 501
 }
 
-type LogResponse = {
+export type LogResponse = {
     data: Log,// 日志数据
     msg: string, // 响应消息
     status: number, // 响应状态
     serverId: number, // 推送这条消息的服务id
 }
-const LogLevelColor = {
+export const LogLevelColor = {
     16: {text: "ERROR", color: "danger"},
     8: {text: "WARN", color: "warning"},
     4: {text: "INFO", color: "success"},
@@ -47,19 +47,37 @@ interface ShowLoggerState {
 }
 
 let eventSource;
-const loggerContainer = React.createRef();
-export default class ShowLogger extends Component {
+const page = React.createRef();
+const logData: Log[] = [];
+// 界面刷新计时器id
+let refreshPageIntervalId;
+export default class ShowLogger extends Component<{}> {
     state: ShowLoggerState = {
-        logData: [],
-        autoRoll: true,
+        autoRoll: false,
         errorStatus: false,
         socketErrorLog: [],
         notificationStatus: false,
+        lastLogKey: -1,
     }
 
     componentDidMount() {
         this.toConnection();
         console.log("日志服务连接建立")
+    }
+
+
+    refreshPage = () => {
+        const {autoRoll} = this.state;
+        // 刷新日志
+        if (logData.length === 0) {
+            return
+        }
+        this.setState({lastLogKey: logData[logData.length - 1].key}, () => {
+            // 自动滚动
+            if (autoRoll) {
+                page.current.scrollTop = page.current.scrollHeight;
+            }
+        })
     }
 
     componentWillUnmount() {
@@ -72,9 +90,9 @@ export default class ShowLogger extends Component {
     }
 
     clean = () => {
+        logData.length = 0;
         this.setState({
             socketErrorLog: [],
-            logData: [],
         })
     }
 
@@ -87,7 +105,7 @@ export default class ShowLogger extends Component {
             eventSource = new EventSource(`/api/log/output`);
 
             eventSource.addEventListener("message", event => {
-                const {autoRoll, logData, socketErrorLog} = this.state;
+                const {socketErrorLog} = this.state;
                 try {
                     let logResponse: LogResponse = JSON.parse(event.data);
                     if (logResponse.status === STATUS.SUCCESS) {
@@ -97,13 +115,6 @@ export default class ShowLogger extends Component {
                             time: new Date(logResponse.data.timeStamp).toLocaleString()
                         };
                         logData.push(log);
-                        // 刷新日志
-                        this.setState({logData}, () => {
-                            // 自动滚动
-                            if (autoRoll) {
-                                document.getElementById("logContent").parentElement.scrollTop = document.getElementById("logContent").offsetHeight;
-                            }
-                        })
                     } else {
                         socketErrorLog.push(`错误代码：${logResponse.status}, 错误消息：${logResponse.msg}`);
                         this.setState({socketErrorLog});
@@ -114,6 +125,10 @@ export default class ShowLogger extends Component {
                     this.setState({socketErrorLog});
                 }
             });
+            if (refreshPageIntervalId === undefined) {
+                refreshPageIntervalId = setInterval(this.refreshPage, 1500);
+            }
+
         } catch (e) {
             console.error(e);
             const {socketErrorLog} = this.state;
@@ -126,36 +141,46 @@ export default class ShowLogger extends Component {
     }
     acceptNotification = (notificationStatus) => {
         this.setState({notificationStatus})
+        if (notificationStatus === false) {
+            eventSource.close();
+            this.refreshPage();
+            clearInterval(refreshPageIntervalId)
+            refreshPageIntervalId = undefined;
+        } else {
+            this.toConnection();
+        }
     }
 
     render() {
-        const {errorStatus, socketErrorLog, logData} = this.state;
-        const logs = (errorStatus === true ? socketErrorLog : logData).map(item => {
-            return <Paragraph key={item.key}>
-                {item.time}&nbsp;
-                {item.loggerName}&nbsp;
-                [{item.threadName}]&nbsp;
-                <Text type={LogLevelColor[item.level].color}> {LogLevelColor[item.level].text} </Text>
-                {item.level === 16 ? item.message + item.stackTrace : item.message}
-            </Paragraph>;
-        });
-        return <div style={{height: "100%", overflowY: "scroll", paddingRight: "10px"}} className={"custom-scrollbar-container"} ref={loggerContainer}>
-            <Affix key={"logAffix"} offsetTop={20} style={{textAlign: "right"}} target={() => loggerContainer.current}>
-                <Popover content={<PopoverContent clean={this.clean} relink={this.toConnection} acceptNotification={this.acceptNotification} setOnlyError={this.setOnlyError}
+        const {errorStatus, socketErrorLog} = this.state;
+        return <div style={{height: "100%", overflowY: "auto", paddingRight: "10px"}} className={"custom-scrollbar-container"} ref={page}>
+            <Affix key={"logAffix"} offsetTop={20} style={{textAlign: "right", height: 0}} target={() => page.current}>
+                <Popover content={<PopoverContent clean={this.clean}
+                                                  relink={this.toConnection}
+                                                  acceptNotification={this.acceptNotification}
+                                                  setOnlyError={this.setOnlyError}
                                                   setDivRoll={roll => {
                                                       console.log("设置滚动:", roll)
                                                       this.setState({
                                                           autoRoll: roll
                                                       })
-                                                  }}/>} title={null}>
-                    <Avatar style={{backgroundColor: '#1890ff'}} shape="square" icon={<BarsOutlined/>}/>
+                                                  }}/>}
+                         title={null}>
+                    <Avatar style={{backgroundColor: 'rgba(24, 144, 255,0.5'}} shape="square" icon={<BarsOutlined/>}/>
                 </Popover>
             </Affix>
-
-            <div key={"logContent"} id={"logContent"} style={{whiteSpace: "pre-wrap"}}
-                 className={"custom-scrollbar-container"}>
-                {logs}
-            </div>
+            <p>当前共页共收集 {logData.length} 条数据</p>
+            {(logData.length > 500 ? logData.slice(-500) : logData)
+                .map((item: Log) => (
+                    <Paragraph key={`Paragraph-${item.key}`}>
+                        {item.key}&nbsp;
+                        {item.time}&nbsp;
+                        {item.loggerName}&nbsp;
+                        [{item.threadName}]&nbsp;
+                        <Text key={`Paragraph-Text-${item.key}`} type={LogLevelColor[item.level].color}> {LogLevelColor[item.level].text} </Text>
+                        {item.level === 16 ? item.message + item.stackTrace : item.message}
+                    </Paragraph>
+                ))}
         </div>;
     }
 }
@@ -163,9 +188,9 @@ const PopoverContent = ({clean, relink, setDivRoll, acceptNotification, setOnlyE
     return <div>
         <div><Switch onChange={setOnlyError}/><LinkOutlined/>只显示错误</div>
         <br/>
-        <div style={{marginTop: "5px"}}><Switch onChange={acceptNotification}/><LinkOutlined/>接收通知</div>
+        <div style={{marginTop: "5px"}}><Switch onChange={acceptNotification}/><LinkOutlined/>接收日志</div>
         <br/>
-        <div style={{marginTop: "5px"}}><Switch defaultChecked onChange={setDivRoll}/><VerticalAlignBottomOutlined/>自动滚动</div>
+        <div style={{marginTop: "5px"}}><Switch onChange={setDivRoll}/><VerticalAlignBottomOutlined/>自动滚动</div>
         <br/>
         <Button onClick={clean} key={"cleanBtn"} icon={<DeleteOutlined/>} type={"text"}>清空</Button>
         <Button onClick={relink} key={"relinkBtn"} icon={<LinkOutlined/>} type={"text"}>重新链接</Button>

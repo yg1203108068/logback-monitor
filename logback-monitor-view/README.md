@@ -80,3 +80,5 @@ here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-
 ## DEBUG 模式
 
 上线前需要去掉 DEBUG 模式，如果请求头中有 DEBUG 则 Token 不会自动续期 , 调整模式在 config.js 中
+## TODO List
+* 集群架构的自动滚动实现有问题

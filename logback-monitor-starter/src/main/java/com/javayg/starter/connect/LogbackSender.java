@@ -54,7 +54,7 @@ public class LogbackSender {
      */
     public void send(Log log) {
         if (!enable) {
-            appender.addWarn("准备推送，但没有可用的Socket，丢弃的日志：" + log.toString());
+            appender.addWarn("准备推送，但没有可达的Socket，丢弃的日志：" + log.toString());
             return;
         }
         if (fixing) {

@@ -6,6 +6,9 @@ import {ModalProps} from "antd/lib/modal/Modal";
 import {SearchOutlined} from "@ant-design/icons";
 import '../css/simple-table-setting.css'
 
+/**
+ * 简单表格属性
+ */
 type SimpleTableProps = {
     tableKey: string,
     data: any,
@@ -22,6 +25,9 @@ type SimpleTableProps = {
     }
 }
 
+/**
+ * 简单的表格组件
+ */
 export class SimpleTable extends React.Component<SimpleTableProps> {
     constructor({columns, defaultShowColumns}) {
         super();
@@ -74,6 +80,12 @@ export class SimpleTable extends React.Component<SimpleTableProps> {
     }
 }
 
+/**
+ * 加载数据失败的结果
+ * @param data{FetchErrorStatus} 加载错误的失败
+ * @returns {JSX.Element} 失败结果
+ * @constructor
+ */
 export function FetchDataResult({data}) {
     return <Result
         status="500"
@@ -82,13 +94,18 @@ export function FetchDataResult({data}) {
     />;
 }
 
+/**
+ * 一个带按钮的Modal属性
+ */
 export interface AutoModalProps extends ModalProps {
     showBtnText: string,
     showBtnProps?: BaseButtonProps,
     showBtnStyle?: CSSProperties | undefined,
     type?: ButtonType,
 }
-
+/**
+ * 一个带按钮的Modal
+ */
 export class AutoModal extends React.Component<AutoModalProps> {
     state = {
         isModalOpen: false
@@ -129,6 +146,13 @@ export class AutoModal extends React.Component<AutoModalProps> {
     }
 }
 
+/**
+ * 通过参数创建支持搜索的列
+ * @param dataIndex 目前没用
+ * @param label 搜索输入框需要提示的文字
+ * @param searchInputRef 需要一个引用对象，可以通过 React.createRef() 在组件内创建一个引用对象
+ * @returns {{filterDropdown: (function({setSelectedKeys: *, selectedKeys: *, confirm: *, clearFilters: *}): *), filterIcon: (function(boolean): *), onFilterDropdownOpenChange: *}}
+ */
 export function genColumnSearchProps(dataIndex, label, searchInputRef) {
     return ({
         filterDropdown: ({setSelectedKeys, selectedKeys, confirm, clearFilters}) => (

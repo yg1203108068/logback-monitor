@@ -68,12 +68,12 @@ public class LogConnect extends Thread {
                             // 获取数据包长度
                             byte[] bytes = new byte[4];
                             int headerReadLen = inputStream.read(bytes);
-                            Assert.equals(headerReadLen, 4, () -> new LogParserException("日志的头信息获取失败"));
+                            Assert.equals(headerReadLen, 4, () -> new LogParserException("日志的头信息获取失败,数据包错误"));
                             int payloadLen = ByteUtils.byteArrayToInt(bytes);
                             byte[] payloadBytes = new byte[payloadLen];
                             // 获取负载
                             int payloadReadLen = inputStream.read(payloadBytes);
-                            Assert.equals(payloadReadLen, payloadLen, () -> new LogParserException("日志的负载获取失败"));
+                            Assert.equals(payloadReadLen, payloadLen, () -> new LogParserException("日志的负载获取失败，数据包错误"));
                             ByteBuffer payloadBuffer = ByteBuffer.wrap(payloadBytes);
 
                             // 将客户端信息处理后发送给日志中继器
@@ -107,15 +107,21 @@ public class LogConnect extends Thread {
                         }
                     } catch (LogParserException | UnknownLogLevelException e) {
                         log.error("LogConnect.run() -日志解析异常- ", e);
-                        webLogRepeater.error("日志解析异常");
+                        webLogRepeater.error("日志解析异常，一些日志将被丢弃");
+                        inputStream.skip(inputStream.available());
                     }
                 }
             } catch (SocketException e) {
-                System.out.println("已经与 客户端 Socket 断开连接");
+                log.error("LogConnect.run() -已经与 客户端 Socket 断开连接- ", e);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } finally {
+            try {
+                shutdownStarter();
+            } catch (IOException e) {
+                log.error("LogConnect.run() -关闭远端Socket失败- ", e);
+            }
             moduleManager.removeModule(serverId);
         }
     }

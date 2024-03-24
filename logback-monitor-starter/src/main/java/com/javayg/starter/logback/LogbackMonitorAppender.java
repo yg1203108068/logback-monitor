@@ -34,7 +34,7 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
     /**
      * 构造 Logback 日志数据 分析平台追加器
      *
-     * @param properties      分析平台相关配置
+     * @param properties       分析平台相关配置
      * @param localServerCache 本地服务信息缓存
      */
     public LogbackMonitorAppender(MonitorProperties properties, LocalServerCache localServerCache) {
@@ -46,12 +46,13 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
 
     /**
      * 启动远端日志追加器的方法，通过调用启动方法，使远端追加器生效
+     *
      * @date 2024/3/19
      * @author YangGang
      */
     @Override
     public void start() {
-        this.sender = new LogbackSender(this,localServerCache);
+        this.sender = new LogbackSender(this, localServerCache);
         boolean start = sender.start(properties.getHost(), properties.getPort());
         if (!start) {
             addError("日志监控推送 Appender 启动失败");
@@ -72,6 +73,9 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
 
     @Override
     protected void append(ILoggingEvent eventObject) {
+        if (!isStarted()) {
+            addWarn("远程日志追加器尚未启动");
+        }
         Log logInfo = new Log(eventObject);
         sender.send(logInfo);
     }

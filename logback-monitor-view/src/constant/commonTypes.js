@@ -3,3 +3,10 @@ export type FetchResult<T> = {
     msg: string,
     data: T
 }
+/**
+ * 加载错误
+ */
+export type FetchErrorStatus = {
+    code: number,
+    msg: string,
+}
