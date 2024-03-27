@@ -1,3 +1,6 @@
-# Logback
+# Listener
 org.springframework.context.ApplicationListener=\
     com.javayg.starter.logback.RemoteLogbackMonitorConfigurator
+# AutoConfig
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.javayg.starter.logback.RpcAutoConfiguration
