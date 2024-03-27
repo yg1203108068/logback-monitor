@@ -91,8 +91,7 @@ public class Log {
                 .putInt(messageBytes.length)
                 .put(messageBytes);
         if (stackTraceBytes.length > 0) {
-            buffer.putInt(stackTraceBytes.length)
-                    .put(stackTraceBytes);
+            buffer.put(stackTraceBytes);
         }
         return buffer.array();
     }
