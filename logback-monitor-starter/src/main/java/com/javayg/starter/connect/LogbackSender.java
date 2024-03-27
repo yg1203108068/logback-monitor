@@ -26,12 +26,14 @@ public class LogbackSender {
     private String host;
     private Integer port;
     private Socket socket;
+    // Appender 是否已启用
     private boolean enable = false;
+    // 推送出错时 这里变成 true，并检查原因重新连接
+    private boolean fixing = false;
+    
     OutputStream outputStream;
     // 用于输出组件相关的信息
     private final UnsynchronizedAppenderBase<ILoggingEvent> appender;
-    // 推送出错是 这里变成 true，并检查原因重新连接
-    private boolean fixing = false;
 
     /**
      * 本地服务的相关信息
@@ -95,43 +97,58 @@ public class LogbackSender {
      * @author YangGang
      * @description 建立与服务端的连接
      */
-    public boolean start(String host, Integer port) {
+    public void start(String host, Integer port) {
         appender.addInfo("启动日志推送器");
         enable = (host != null && port != null);
         if (enable) {
             this.host = host;
             this.port = port;
-            return initSocket();
+            initSocket();
+            return;
         }
         // 缺少配置项，提示
         appender.addWarn("请检查接收方配置：logback.monitor.host 和 logback.monitor.port");
-        return false;
     }
 
-    public boolean initSocket() {
+    /**
+     * 初始化socket
+     *
+     * @date 2024/3/28
+     * @author YangGang
+     */
+    public void initSocket() {
         appender.addInfo("初始化Socket");
         // 初始化连接
         try {
             socket = new Socket(host, port);
             outputStream = socket.getOutputStream();
+            listenMessages(socket.getInputStream());
             // 注册： 发送 stater 版本号、服务名称
             outputStream.write(Command.REGISTER.getCode());
             outputStream.write(new RegistrationParams(localServerCache.getServerName()).payload());
         } catch (IOException e) {
             appender.addError("建立连接失败，请确保服务端已启动 " + e.getMessage());
-            return false;
         }
+    }
 
-        // 检查： 注册是否成功
-        try {
-            InputStream inputStream = socket.getInputStream();
-            new Thread(() -> {
-                try {
+    /**
+     * 监听服务端的消息
+     *
+     * @param inputStream 服务端输入流
+     * @date 2024/3/28
+     * @author YangGang
+     */
+    private void listenMessages(InputStream inputStream) {
+        new Thread(() -> {
+            try {
+                while (true) {
+                    // todo 目前无法获取到服务端的响应
                     byte read = (byte) inputStream.read();
                     // 关闭
                     if (read == Command.SHUTDOWN.getCode()) {
                         outputStream.write(Command.SHUTDOWN.getCode());
                         socket.close();
+                        return;
                     }
                     // 注册
                     else if (read == Command.REGISTER.getCode()) {
@@ -142,20 +159,17 @@ public class LogbackSender {
                             Response response = new Response(inputStream);
                             String clientId = response.getMsg().getContent();
                             localServerCache.setClientId(clientId);
+                            fixing=false;
                         } else {
                             Response response = new Response(inputStream);
                             appender.addWarn("与日志监控服务器建立连接是失败，错误码：" + response.getStatus().getCode() + "，内容：" + response.getMsg().getContent());
                         }
                     }
-                } catch (IOException | ResponseUnknownException e) {
-                    appender.addError("与日志监控服务器的连接出现异常 " + e.getMessage());
                 }
-            }).start();
-        } catch (IOException e) {
-            appender.addError("建立的连接输入流存在异常 " + e.getMessage());
-            return false;
-        }
-        return true;
+            } catch (IOException | ResponseUnknownException e) {
+                appender.addError("与日志监控服务器的连接出现异常，监听线程关闭 " + e.getMessage());
+            }
+        }).start();
     }
 
     /**
@@ -185,10 +199,10 @@ public class LogbackSender {
         appender.addInfo("尝试重建 Socket 连接");
         socket.close();
         for (int i = 0; i < 100; i++) {
-            if (initSocket()) {
-                fixing = false;
+            if(!fixing){
                 return;
             }
+            initSocket();
             Thread.sleep(3000);
         }
         throw new FixSocketException("5分钟内尝试了100次，远程日志分析平台没有连接成功");

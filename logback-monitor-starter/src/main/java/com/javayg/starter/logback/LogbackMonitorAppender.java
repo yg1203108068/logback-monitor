@@ -7,7 +7,6 @@ import com.javayg.starter.connect.LogbackSender;
 import com.javayg.starter.entity.CallChain;
 import com.javayg.starter.entity.Log;
 import com.javayg.starter.entity.MonitorProperties;
-import com.javayg.starter.exception.ClientException;
 
 /**
  * logback 日志 分析平台 推送 追加器
@@ -54,11 +53,7 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
     @Override
     public void start() {
         this.sender = new LogbackSender(this, clientContext);
-        boolean start = sender.start(properties.getHost(), properties.getPort());
-        if (!start) {
-            addError("日志监控推送 Appender 启动失败");
-            throw new ClientException("日志推送器无法启动");
-        }
+        sender.start(properties.getHost(), properties.getPort());
         addInfo("日志监控推送 Appender 已启动");
         super.start();
     }
@@ -79,8 +74,8 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
         }
         CallChain callChain = clientContext.getCallChainInfo().get();
         if (callChain != null) {
-            System.out.println(callChain.getId());
-            System.out.println(callChain.getPrevClientId());
+            addInfo("callChain.getId()             " + callChain.getId());
+            addInfo("callChain.getPrevClientId()   " + callChain.getPrevClientId());
         }
         Log logInfo = new Log(eventObject);
         sender.send(logInfo);

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.GenericApplicationListener;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -22,6 +23,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
  */
 public class RemoteLogbackMonitorConfigurator implements GenericApplicationListener {
     private static ClientContext clientContext;
+    private static LogbackMonitorAppender logbackMonitorAppender;
 
     protected static ClientContext getClientContext() {
         return clientContext;
@@ -30,15 +32,31 @@ public class RemoteLogbackMonitorConfigurator implements GenericApplicationListe
     @Override
     public boolean supportsEventType(ResolvableType eventType) {
         if (eventType.getRawClass() != null) {
-            return eventType.getRawClass().isAssignableFrom(ApplicationContextInitializedEvent.class);
+            return eventType.getRawClass().isAssignableFrom(ApplicationContextInitializedEvent.class)
+                    || eventType.getRawClass().isAssignableFrom(ContextClosedEvent.class);
         }
         return false;
     }
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof ApplicationContextInitializedEvent) {
+            init((ApplicationContextInitializedEvent) event);
+        } else if (event instanceof ContextClosedEvent) {
+            close();
+        }
+    }
+
+    /**
+     * 初始化远程日志追加器
+     *
+     * @param event 启动事件
+     * @date 2024/3/28
+     * @author YangGang
+     */
+    private static void init(ApplicationContextInitializedEvent event) {
         // 获取配置信息
-        ConfigurableApplicationContext applicationContext = ((ApplicationContextInitializedEvent) event).getApplicationContext();
+        ConfigurableApplicationContext applicationContext = event.getApplicationContext();
         ConfigurableEnvironment environment = applicationContext.getEnvironment();
         // 获取当前日志系统的上下文
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -46,7 +64,7 @@ public class RemoteLogbackMonitorConfigurator implements GenericApplicationListe
 
         MonitorProperties prop = new MonitorProperties(environment);
         clientContext = new ClientContext(environment);
-        LogbackMonitorAppender logbackMonitorAppender = new LogbackMonitorAppender(prop, clientContext);
+        logbackMonitorAppender = new LogbackMonitorAppender(prop, clientContext);
         logbackMonitorAppender.setContext(loggerContext);
         try {
             logbackMonitorAppender.start();
@@ -58,5 +76,16 @@ public class RemoteLogbackMonitorConfigurator implements GenericApplicationListe
         // 将 appender 添加到 logger 的上下文中，开始收集日志
         log.addAppender(logbackMonitorAppender);
         log.info("添加 Appender 远程日志分析平台地址：" + prop.getHost() + ":" + prop.getPort());
+    }
+
+    /**
+     * 程序关闭
+     *
+     * @date 2024/3/28
+     * @author YangGang
+     */
+    private void close() {
+        System.out.println("关闭回调");
+        logbackMonitorAppender.stop();
     }
 }
