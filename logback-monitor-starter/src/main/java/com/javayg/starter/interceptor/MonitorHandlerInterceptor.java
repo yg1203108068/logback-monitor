@@ -3,6 +3,9 @@ package com.javayg.starter.interceptor;
 import com.javayg.starter.connect.ClientContext;
 import com.javayg.starter.constant.RpcHeaderNames;
 import com.javayg.starter.entity.CallChain;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -16,7 +19,11 @@ import java.util.UUID;
  * @author YangGang
  * @date 2024/3/26
  */
+@Component
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class MonitorHandlerInterceptor implements HandlerInterceptor {
+
+    @Autowired
     ClientContext clientContext;
 
     public MonitorHandlerInterceptor(ClientContext clientContext) {

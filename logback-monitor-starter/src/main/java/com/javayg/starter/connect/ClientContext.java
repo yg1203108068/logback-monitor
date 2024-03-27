@@ -2,7 +2,7 @@ package com.javayg.starter.connect;
 
 import com.javayg.starter.entity.CallChain;
 import lombok.Getter;
-import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 
 /**
  * 用于缓存本地服务的信息
@@ -30,7 +30,7 @@ public class ClientContext {
      *
      * @param environment 当前系统的环境变量
      */
-    public ClientContext(ConfigurableEnvironment environment) {
+    public ClientContext(Environment environment) {
         this.serverName = environment.getProperty("spring.application.name");
     }
 

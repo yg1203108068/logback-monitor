@@ -5,7 +5,6 @@ import ch.qos.logback.classic.LoggerContext;
 import com.javayg.starter.connect.ClientContext;
 import com.javayg.starter.entity.MonitorProperties;
 import com.javayg.starter.exception.ClientException;
-import com.javayg.starter.interceptor.MonitorHandlerInterceptor;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
 import org.springframework.context.ApplicationEvent;
@@ -22,6 +21,12 @@ import org.springframework.core.env.ConfigurableEnvironment;
  * @description 在应用程序初始化时，创建追加器并启动
  */
 public class RemoteLogbackMonitorConfigurator implements GenericApplicationListener {
+    private static ClientContext clientContext;
+
+    protected static ClientContext getClientContext() {
+        return clientContext;
+    }
+
     @Override
     public boolean supportsEventType(ResolvableType eventType) {
         if (eventType.getRawClass() != null) {
@@ -40,10 +45,9 @@ public class RemoteLogbackMonitorConfigurator implements GenericApplicationListe
         Logger log = loggerContext.getLogger("ROOT");
 
         MonitorProperties prop = new MonitorProperties(environment);
-        ClientContext clientContext = new ClientContext(environment);
+        clientContext = new ClientContext(environment);
         LogbackMonitorAppender logbackMonitorAppender = new LogbackMonitorAppender(prop, clientContext);
         logbackMonitorAppender.setContext(loggerContext);
-        registerHandlerInterceptor(applicationContext, clientContext);
         try {
             logbackMonitorAppender.start();
         } catch (ClientException e) {
@@ -54,10 +58,5 @@ public class RemoteLogbackMonitorConfigurator implements GenericApplicationListe
         // 将 appender 添加到 logger 的上下文中，开始收集日志
         log.addAppender(logbackMonitorAppender);
         log.info("添加 Appender 远程日志分析平台地址：" + prop.getHost() + ":" + prop.getPort());
-    }
-
-    private void registerHandlerInterceptor(ConfigurableApplicationContext applicationContext, ClientContext context) {
-        MonitorHandlerInterceptor interceptor = new MonitorHandlerInterceptor(context);
-        applicationContext.getBeanFactory().registerSingleton("logbackMonitorHandlerInterceptor", interceptor);
     }
 }
