@@ -97,13 +97,17 @@ public class LogConnect extends Thread {
                             }
                             registrationParams.setHost(remote.getInetAddress().getHostAddress());
                             registrationParams.setPort(remote.getPort());
-                            webLogRepeater.write(Command.REGISTER.getCode());
                             Response response = new Response();
                             response.setMsg(new VariableLengthString("注册成功"));
                             response.setStatus(Status.SUCCESS);
                             log.info("有新的模块成功注册={}", registrationParams);
                             moduleManager.addModule(registrationParams);
                             serverId = registrationParams.getServerId();
+                            Response success = new Response();
+                            success.setMsg(new VariableLengthString(String.valueOf(serverId)));
+                            success.setStatus(Status.SUCCESS);
+                            webLogRepeater.write(Command.REGISTER.getCode());
+                            webLogRepeater.write(response.getPayload());
                         }
                     } catch (LogParserException | UnknownLogLevelException e) {
                         log.error("LogConnect.run() -日志解析异常- ", e);

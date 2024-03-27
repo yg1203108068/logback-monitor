@@ -1,4 +1,4 @@
-package com.javayg.starter.entity;
+package com.javayg.starter.constant;
 
 /**
  * 网络传输可用的命令

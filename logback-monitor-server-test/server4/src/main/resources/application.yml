@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: TestServer-4
+logback:
+  monitor:
+    host: 127.0.0.1
+    port: 8733
+server:
+  port: 8091

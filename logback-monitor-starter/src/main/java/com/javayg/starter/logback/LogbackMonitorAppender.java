@@ -2,8 +2,9 @@ package com.javayg.starter.logback;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import com.javayg.starter.connect.ClientContext;
 import com.javayg.starter.connect.LogbackSender;
-import com.javayg.starter.entity.LocalServerCache;
+import com.javayg.starter.entity.CallChain;
 import com.javayg.starter.entity.Log;
 import com.javayg.starter.entity.MonitorProperties;
 import com.javayg.starter.exception.ClientException;
@@ -24,7 +25,7 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
     /**
      * 本地服务的信息
      */
-    LocalServerCache localServerCache;
+    ClientContext clientContext;
 
     /**
      * 定义一个发送器用来将日志发送到远端服务器
@@ -34,13 +35,13 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
     /**
      * 构造 Logback 日志数据 分析平台追加器
      *
-     * @param properties       分析平台相关配置
-     * @param localServerCache 本地服务信息缓存
+     * @param properties    分析平台相关配置
+     * @param clientContext 本地服务信息缓存
      */
-    public LogbackMonitorAppender(MonitorProperties properties, LocalServerCache localServerCache) {
+    public LogbackMonitorAppender(MonitorProperties properties, ClientContext clientContext) {
         setName("LogbackMonitorAppender");
         this.properties = properties;
-        this.localServerCache = localServerCache;
+        this.clientContext = clientContext;
     }
 
 
@@ -52,7 +53,7 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
      */
     @Override
     public void start() {
-        this.sender = new LogbackSender(this, localServerCache);
+        this.sender = new LogbackSender(this, clientContext);
         boolean start = sender.start(properties.getHost(), properties.getPort());
         if (!start) {
             addError("日志监控推送 Appender 启动失败");
@@ -75,6 +76,11 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
     protected void append(ILoggingEvent eventObject) {
         if (!isStarted()) {
             addWarn("远程日志追加器尚未启动");
+        }
+        CallChain callChain = clientContext.getCallChainInfo().get();
+        if (callChain != null) {
+            System.out.println(callChain.getId());
+            System.out.println(callChain.getPrevClientId());
         }
         Log logInfo = new Log(eventObject);
         sender.send(logInfo);

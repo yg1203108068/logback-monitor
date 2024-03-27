@@ -1,4 +1,4 @@
-package com.javayg.starter.entity;
+package com.javayg.starter.constant;
 
 import com.javayg.starter.exception.ResponseUnknownException;
 import lombok.AllArgsConstructor;

@@ -2,7 +2,11 @@ package com.javayg.starter.connect;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import com.javayg.starter.entity.*;
+import com.javayg.starter.constant.Command;
+import com.javayg.starter.constant.Status;
+import com.javayg.starter.entity.Log;
+import com.javayg.starter.entity.RegistrationParams;
+import com.javayg.starter.entity.Response;
 import com.javayg.starter.exception.FixSocketException;
 import com.javayg.starter.exception.ResponseUnknownException;
 
@@ -32,14 +36,14 @@ public class LogbackSender {
     /**
      * 本地服务的相关信息
      */
-    private final LocalServerCache localServerCache;
+    private final ClientContext localServerCache;
 
     /**
      * 构造数据发送器
      *
      * @param appender 需要一个 Appender 用于记录启动阶段的信息
      */
-    public LogbackSender(UnsynchronizedAppenderBase<ILoggingEvent> appender, LocalServerCache localServerCache) {
+    public LogbackSender(UnsynchronizedAppenderBase<ILoggingEvent> appender, ClientContext localServerCache) {
         this.appender = appender;
         this.localServerCache = localServerCache;
     }
@@ -135,6 +139,9 @@ public class LogbackSender {
                         int code = inputStream.read();
                         if (code == Status.SUCCESS.getCode()) {
                             appender.addInfo("与日志监控服务器已建立连接");
+                            Response response = new Response(inputStream);
+                            String clientId = response.getMsg().getContent();
+                            localServerCache.setClientId(clientId);
                         } else {
                             Response response = new Response(inputStream);
                             appender.addWarn("与日志监控服务器建立连接是失败，错误码：" + response.getStatus().getCode() + "，内容：" + response.getMsg().getContent());

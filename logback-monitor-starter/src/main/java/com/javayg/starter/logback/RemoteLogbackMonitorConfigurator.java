@@ -2,9 +2,10 @@ package com.javayg.starter.logback;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import com.javayg.starter.entity.LocalServerCache;
+import com.javayg.starter.connect.ClientContext;
 import com.javayg.starter.entity.MonitorProperties;
 import com.javayg.starter.exception.ClientException;
+import com.javayg.starter.interceptor.MonitorHandlerInterceptor;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
 import org.springframework.context.ApplicationEvent;
@@ -32,16 +33,17 @@ public class RemoteLogbackMonitorConfigurator implements GenericApplicationListe
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         // 获取配置信息
-        ConfigurableApplicationContext applicationContext = ((ApplicationContextInitializedEvent)event).getApplicationContext();
+        ConfigurableApplicationContext applicationContext = ((ApplicationContextInitializedEvent) event).getApplicationContext();
         ConfigurableEnvironment environment = applicationContext.getEnvironment();
         // 获取当前日志系统的上下文
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger log = loggerContext.getLogger("ROOT");
 
-        MonitorProperties properties = new MonitorProperties(environment);
-        LocalServerCache localServerInfo = new LocalServerCache(environment);
-        LogbackMonitorAppender logbackMonitorAppender = new LogbackMonitorAppender(properties,localServerInfo);
+        MonitorProperties prop = new MonitorProperties(environment);
+        ClientContext clientContext = new ClientContext(environment);
+        LogbackMonitorAppender logbackMonitorAppender = new LogbackMonitorAppender(prop, clientContext);
         logbackMonitorAppender.setContext(loggerContext);
+        registerHandlerInterceptor(applicationContext, clientContext);
         try {
             logbackMonitorAppender.start();
         } catch (ClientException e) {
@@ -51,6 +53,11 @@ public class RemoteLogbackMonitorConfigurator implements GenericApplicationListe
 
         // 将 appender 添加到 logger 的上下文中，开始收集日志
         log.addAppender(logbackMonitorAppender);
-        log.info("添加 Appender 远程日志分析平台地址：" + properties.getHost() + ":" + properties.getPort());
+        log.info("添加 Appender 远程日志分析平台地址：" + prop.getHost() + ":" + prop.getPort());
+    }
+
+    private void registerHandlerInterceptor(ConfigurableApplicationContext applicationContext, ClientContext context) {
+        MonitorHandlerInterceptor interceptor = new MonitorHandlerInterceptor(context);
+        applicationContext.getBeanFactory().registerSingleton("logbackMonitorHandlerInterceptor", interceptor);
     }
 }

@@ -1,5 +1,6 @@
 package com.javayg.starter.entity;
 
+import com.javayg.starter.constant.Status;
 import com.javayg.starter.exception.ResponseUnknownException;
 import com.javayg.starter.wrapper.VariableLengthString;
 import lombok.Getter;
