@@ -28,13 +28,21 @@ import java.nio.ByteBuffer;
 @Slf4j
 public class LogConnect extends Thread {
 
-    private final WebLogRepeater webLogRepeater;
-    private final Socket remote;
+    // 已建立连接
     private boolean connected = true;
-    private final ClientCloseCallBack clientCloseCallBack;
-    private final LogParsing resolve;
+    // 连接被关闭
     private boolean disconnecting = false;
+    // 日志中继器
+    private final WebLogRepeater webLogRepeater;
+    // 远程客户端连接
+    private final Socket remote;
+    // 客户端关闭回调
+    private final ClientCloseCallBack clientCloseCallBack;
+    // 日志解析工具
+    private final LogParsing resolve;
+    // 模块管理器
     private final ModuleManager moduleManager;
+    // 当前客户端的服务id
     private int serverId;
 
     public LogConnect(Socket remote, WebLogRepeater webLogRepeater, ClientCloseCallBack clientCloseCallBack, LogParsing resolve, ModuleManager moduleManager) {
@@ -106,6 +114,7 @@ public class LogConnect extends Thread {
                             Response success = new Response();
                             success.setMsg(new VariableLengthString(String.valueOf(serverId)));
                             success.setStatus(Status.SUCCESS);
+                            log.info("颁发客户端id");
                             webLogRepeater.write(Command.REGISTER.getCode());
                             webLogRepeater.write(response.getPayload());
                         }
