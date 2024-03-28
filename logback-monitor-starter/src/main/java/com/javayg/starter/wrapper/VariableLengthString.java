@@ -33,9 +33,8 @@ public class VariableLengthString {
     }
 
     public VariableLengthString(InputStream inputStream) throws IOException {
-        int lengthNumber = inputStream.read();
-        length = new FixedLengthNumber(lengthNumber);
-        contentBytes = new byte[lengthNumber];
+        length = new FixedLengthNumber(inputStream, FixedLengthNumber.NumberLength.FORE);
+        contentBytes = new byte[length.intValue()];
         inputStream.read(contentBytes);
     }
 
