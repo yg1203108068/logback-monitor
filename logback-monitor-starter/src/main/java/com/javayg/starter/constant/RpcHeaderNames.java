@@ -8,4 +8,5 @@ package com.javayg.starter.constant;
  */
 public class RpcHeaderNames {
     public static final String SENDER_CLIENT_ID = "LogMonitorClientId";
+    public static final String MAIN_CALL_CHAIN_ID = "MainCallChainId";
 }

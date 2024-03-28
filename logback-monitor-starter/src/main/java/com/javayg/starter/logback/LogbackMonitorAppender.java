@@ -54,7 +54,6 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
     public void start() {
         this.sender = new LogbackSender(this, clientContext);
         sender.start(properties.getHost(), properties.getPort());
-        addInfo("日志监控推送 Appender 已启动");
         super.start();
     }
 
@@ -75,6 +74,7 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
         CallChain callChain = clientContext.getCallChainInfo().get();
         if (callChain != null) {
             addInfo("callChain.getId()             " + callChain.getId());
+            addInfo("callChain.getMainId()   " + callChain.getMainId());
             addInfo("callChain.getPrevClientId()   " + callChain.getPrevClientId());
         }
         Log logInfo = new Log(eventObject);

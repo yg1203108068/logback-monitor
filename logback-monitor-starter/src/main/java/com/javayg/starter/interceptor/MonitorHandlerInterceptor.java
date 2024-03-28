@@ -33,9 +33,14 @@ public class MonitorHandlerInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String prevClientId = request.getHeader(RpcHeaderNames.SENDER_CLIENT_ID);
+        String mainCallChainId = request.getHeader(RpcHeaderNames.MAIN_CALL_CHAIN_ID);
         // 调用链ID
         String callChainId = UUID.randomUUID().toString();
-        clientContext.getCallChainInfo().set(new CallChain(prevClientId, callChainId));
+        if (mainCallChainId == null || mainCallChainId.trim().isEmpty()) {
+            clientContext.getCallChainInfo().set(new CallChain(prevClientId, callChainId, callChainId));
+        } else {
+            clientContext.getCallChainInfo().set(new CallChain(prevClientId, callChainId, mainCallChainId));
+        }
         return HandlerInterceptor.super.preHandle(request, response, handler);
     }
 

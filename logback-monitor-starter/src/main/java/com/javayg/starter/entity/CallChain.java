@@ -11,7 +11,11 @@ import lombok.Data;
 @Data
 public class CallChain {
     /**
-     * 调用链id
+     * 主调用链id
+     */
+    private String mainId;
+    /**
+     * 当前链id
      */
     private String id;
     /**
@@ -24,8 +28,9 @@ public class CallChain {
      *
      * @param prevClientId 上一个客户端id
      */
-    public CallChain(String prevClientId, String id) {
+    public CallChain(String prevClientId, String id, String mainCallChainId) {
         this.prevClientId = prevClientId;
+        this.mainId = mainCallChainId;
         this.id = id;
     }
 
