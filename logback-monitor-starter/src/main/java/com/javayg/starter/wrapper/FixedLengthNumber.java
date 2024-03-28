@@ -2,6 +2,11 @@ package com.javayg.starter.wrapper;
 
 import lombok.Getter;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
+
 /**
  * 定长字符串
  *
@@ -17,10 +22,48 @@ public class FixedLengthNumber {
     private final int length;
 
     /**
+     * 通过给定的数字所占用的字节，在输入流中获取数值
+     *
+     * @param inputStream  输入流
+     * @param numberLength 数字的长度
+     */
+    public FixedLengthNumber(InputStream inputStream, NumberLength numberLength) throws IOException {
+        length = numberLength.len;
+        payload = new byte[numberLength.len];
+        inputStream.read(payload);
+    }
+
+    /**
+     * 将当前FixedLengthNumber对象中的payload字节数组转换为一个int类型的数值。
+     * 假设payload字节数组按照大端字节序（Big-Endian）存储了一个int类型的值。
+     *
+     * @return 转换后的int数值, 小端4字节
+     * @throws BufferUnderflowException 如果payload字节数组的长度小于4个字节，将抛出此异常
+     * @date 2024/3/28
+     * @author YangGang
+     */
+    public int intValue() {
+        return ByteBuffer.wrap(payload).getInt();
+    }
+
+    /**
+     * 将当前FixedLengthNumber对象中的payload字节数组转换为一个long类型的数值。
+     * 假设payload字节数组按照大端字节序（Big-Endian）存储了一个long类型的值。
+     *
+     * @return 转换后的long数值, 小端8字节
+     * @throws BufferUnderflowException 如果payload字节数组的长度小于8个字节，将抛出此异常
+     * @date 2024/3/28
+     * @author YangGang
+     */
+    public long longValue() {
+        return ByteBuffer.wrap(payload).getLong();
+    }
+
+    /**
      * 构造一个固定长度的数值类型
      *
-     * @param value  数值
-     * @param len 数值的长度
+     * @param value 数值
+     * @param len   数值的长度
      */
     public FixedLengthNumber(Number value, NumberLength len) {
         this.length = len.len;

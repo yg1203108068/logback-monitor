@@ -29,9 +29,7 @@ public class Response {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public Response(InputStream inputStream) throws IOException, ResponseUnknownException {
-        byte[] statusCode = new byte[1];
-        inputStream.read(statusCode);
-        status = Status.getInstance(statusCode[0]);
+        status = Status.getInstance((byte) inputStream.read());
         msg = new VariableLengthString(inputStream);
     }
 }

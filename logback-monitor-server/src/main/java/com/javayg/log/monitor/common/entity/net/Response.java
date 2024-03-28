@@ -29,14 +29,6 @@ public class Response {
      */
     private VariableLengthString msg;
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Response(InputStream inputStream) throws IOException, ResponseUnknownException {
-        byte[] statusCode = new byte[1];
-        inputStream.read(statusCode);
-        status = Status.getInstance(statusCode[0]);
-        msg = new VariableLengthString(inputStream);
-    }
-
     public byte[] getPayload() {
         byte[] msgPayload = msg.getPayload();
         ByteBuffer buffer = ByteBuffer.allocate(1 + msgPayload.length);
