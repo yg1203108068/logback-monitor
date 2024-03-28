@@ -30,7 +30,7 @@ public class LogbackSender {
     private boolean enable = false;
     // 推送出错时 这里变成 true，并检查原因重新连接
     private boolean fixing = false;
-    
+
     OutputStream outputStream;
     // 用于输出组件相关的信息
     private final UnsynchronizedAppenderBase<ILoggingEvent> appender;
@@ -60,7 +60,6 @@ public class LogbackSender {
      */
     public void send(Log log) {
         if (!enable) {
-            appender.addWarn("准备推送，但没有可达的Socket，丢弃的日志：" + log.toString());
             return;
         }
         if (fixing) {
@@ -98,9 +97,7 @@ public class LogbackSender {
      * @description 建立与服务端的连接
      */
     public void start(String host, Integer port) {
-        appender.addInfo("启动日志推送器");
-        enable = (host != null && port != null);
-        if (enable) {
+        if (host != null && port != null) {
             this.host = host;
             this.port = port;
             initSocket();
@@ -117,12 +114,11 @@ public class LogbackSender {
      * @author YangGang
      */
     public void initSocket() {
-        appender.addInfo("初始化Socket");
         // 初始化连接
         try {
             socket = new Socket(host, port);
             outputStream = socket.getOutputStream();
-            listenMessages(socket.getInputStream());
+            listenMessages();
             // 注册： 发送 stater 版本号、服务名称
             outputStream.write(Command.REGISTER.getCode());
             outputStream.write(new RegistrationParams(localServerCache.getServerName()).payload());
@@ -138,11 +134,11 @@ public class LogbackSender {
      * @date 2024/3/28
      * @author YangGang
      */
-    private void listenMessages(InputStream inputStream) {
+    private void listenMessages() {
         new Thread(() -> {
             try {
+                InputStream inputStream = socket.getInputStream();
                 while (true) {
-                    // todo 目前无法获取到服务端的响应
                     byte read = (byte) inputStream.read();
                     // 关闭
                     if (read == Command.SHUTDOWN.getCode()) {
@@ -152,17 +148,16 @@ public class LogbackSender {
                     }
                     // 注册
                     else if (read == Command.REGISTER.getCode()) {
-                        // 状态码
-                        int code = inputStream.read();
-                        if (code == Status.SUCCESS.getCode()) {
-                            appender.addInfo("与日志监控服务器已建立连接");
-                            Response response = new Response(inputStream);
+                        appender.addInfo("正在与日志监控服务器已建立连接...");
+                        Response response = new Response(inputStream);
+                        if (response.getStatus() == Status.SUCCESS) {
                             String clientId = response.getMsg().getContent();
                             localServerCache.setClientId(clientId);
-                            fixing=false;
+                            fixing = false;
+                            enable = true;
+                            appender.addInfo("与日志监控服务器建立连接成功，当前客户端id :" + clientId);
                         } else {
-                            Response response = new Response(inputStream);
-                            appender.addWarn("与日志监控服务器建立连接是失败，错误码：" + response.getStatus().getCode() + "，内容：" + response.getMsg().getContent());
+                            appender.addWarn("与日志监控服务器建立连接失败，错误码：" + response.getStatus().getCode() + "，内容：" + response.getMsg().getContent());
                         }
                     }
                 }
@@ -199,7 +194,7 @@ public class LogbackSender {
         appender.addInfo("尝试重建 Socket 连接");
         socket.close();
         for (int i = 0; i < 100; i++) {
-            if(!fixing){
+            if (!fixing) {
                 return;
             }
             initSocket();

@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
@@ -43,7 +44,9 @@ public class LogConnect extends Thread {
     // 模块管理器
     private final ModuleManager moduleManager;
     // 当前客户端的服务id
-    private int serverId;
+    private int clientId;
+    // 输出流
+    private OutputStream outputStream;
 
     public LogConnect(Socket remote, WebLogRepeater webLogRepeater, ClientCloseCallBack clientCloseCallBack, LogParsing resolve, ModuleManager moduleManager) {
         this.remote = remote;
@@ -59,6 +62,7 @@ public class LogConnect extends Thread {
         try {
             try {
                 super.run();
+                this.outputStream = remote.getOutputStream();
                 // 不用向客户端发送消息
                 while (connected) {
                     log.debug("循环读取客户端发送来的日志信息");
@@ -72,7 +76,7 @@ public class LogConnect extends Thread {
                             shutdownStarter();
                             break;
                         } else if (command == Command.LOG.getCode()) {
-                            log.debug("接收到新的日志数据消息,serverId={}", serverId);
+                            log.debug("接收到新的日志数据消息,clientId={}", clientId);
                             // 获取数据包长度
                             byte[] bytes = new byte[4];
                             int headerReadLen = inputStream.read(bytes);
@@ -86,7 +90,7 @@ public class LogConnect extends Thread {
 
                             // 将客户端信息处理后发送给日志中继器
                             Log logInfo = resolve.resolve(payloadBuffer);
-                            webLogRepeater.logHandler(logInfo, serverId);
+                            webLogRepeater.logHandler(logInfo, clientId);
                             log.debug("日志已处理");
                         } else if (command == Command.CLIENT_CLOSE.getCode()) {
                             webLogRepeater.warn("客户端已断开连接");
@@ -95,28 +99,25 @@ public class LogConnect extends Thread {
                             RegistrationParams registrationParams = new RegistrationParams(inputStream);
                             byte protocolVersion = registrationParams.getProtocolVersion();
                             if (protocolVersion > 2) {
-                                webLogRepeater.write(Command.REGISTER.getCode());
+                                outputStream.write(Command.REGISTER.getCode());
                                 Response response = new Response();
                                 response.setMsg(new VariableLengthString("未知的版本"));
                                 response.setStatus(Status.ERROR);
-                                webLogRepeater.write(response.getPayload());
+                                outputStream.write(response.getPayload());
                                 shutdownStarter();
                                 close();
                             }
                             registrationParams.setHost(remote.getInetAddress().getHostAddress());
                             registrationParams.setPort(remote.getPort());
+                            clientId = registrationParams.getServerId();
                             Response response = new Response();
-                            response.setMsg(new VariableLengthString("注册成功"));
+                            response.setMsg(new VariableLengthString(String.valueOf(clientId)));
                             response.setStatus(Status.SUCCESS);
                             log.info("有新的模块成功注册={}", registrationParams);
                             moduleManager.addModule(registrationParams);
-                            serverId = registrationParams.getServerId();
-                            Response success = new Response();
-                            success.setMsg(new VariableLengthString(String.valueOf(serverId)));
-                            success.setStatus(Status.SUCCESS);
-                            log.info("颁发客户端id");
-                            webLogRepeater.write(Command.REGISTER.getCode());
-                            webLogRepeater.write(response.getPayload());
+                            outputStream.write(Command.REGISTER.getCode());
+                            outputStream.write(response.getPayload());
+                            log.info("颁发客户端id={}", clientId);
                         }
                     } catch (LogParserException | UnknownLogLevelException e) {
                         log.error("LogConnect.run() -日志解析异常- ", e);
@@ -135,7 +136,7 @@ public class LogConnect extends Thread {
             } catch (IOException e) {
                 log.error("LogConnect.run() -关闭远端Socket失败- ", e);
             }
-            moduleManager.removeModule(serverId);
+            moduleManager.removeModule(clientId);
         }
     }
 
