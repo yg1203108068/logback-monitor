@@ -125,4 +125,16 @@ public class Server3 {
         log.info("Server3.test8() called");
         server4.test();
     }
+
+    /**
+     * 带路径
+     *
+     * @date 2024/3/26
+     * @author YangGang
+     */
+    @GetMapping("/9")
+    public void test9() {
+        log.info("Server3.test9() called");
+        server4.test();
+    }
 }

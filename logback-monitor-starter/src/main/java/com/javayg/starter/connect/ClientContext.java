@@ -1,6 +1,6 @@
 package com.javayg.starter.connect;
 
-import com.javayg.starter.entity.CallChain;
+import com.javayg.common.entity.CallChain;
 import lombok.Getter;
 import org.springframework.core.env.Environment;
 

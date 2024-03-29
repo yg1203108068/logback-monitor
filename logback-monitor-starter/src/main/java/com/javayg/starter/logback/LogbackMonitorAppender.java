@@ -2,10 +2,10 @@ package com.javayg.starter.logback;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import com.javayg.common.entity.CallChain;
+import com.javayg.common.entity.Log;
 import com.javayg.starter.connect.ClientContext;
 import com.javayg.starter.connect.LogbackSender;
-import com.javayg.starter.entity.CallChain;
-import com.javayg.starter.entity.Log;
 import com.javayg.starter.entity.MonitorProperties;
 
 /**
@@ -77,7 +77,7 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
             addInfo("callChain.getMainId()   " + callChain.getMainId());
             addInfo("callChain.getPrevClientId()   " + callChain.getPrevClientId());
         }
-        Log logInfo = new Log(eventObject);
+        Log logInfo = new Log(eventObject,callChain);
         sender.send(logInfo);
     }
 }

@@ -3,7 +3,7 @@ package com.javayg.log.monitor.common.component;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import com.javayg.log.monitor.common.entity.log.Log;
+import com.javayg.common.entity.Log;
 import com.javayg.log.monitor.common.entity.vo.OutputVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

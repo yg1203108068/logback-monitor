@@ -10,7 +10,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class MonitorInterceptorAutoConfiguration {
 
     @Bean
@@ -19,6 +18,7 @@ public class MonitorInterceptorAutoConfiguration {
     }
 
     @Configuration
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public static class WebMvcConfig implements WebMvcConfigurer {
 
         @Autowired

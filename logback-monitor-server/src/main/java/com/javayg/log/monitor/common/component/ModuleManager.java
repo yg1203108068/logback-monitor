@@ -1,14 +1,11 @@
 package com.javayg.log.monitor.common.component;
 
-import com.javayg.log.monitor.common.entity.net.RegistrationParams;
+import com.javayg.common.entity.RegistrationParams;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * 模块管理器，管理所有通过 starter 注册来的模块

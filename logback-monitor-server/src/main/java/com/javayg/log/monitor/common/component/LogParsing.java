@@ -1,8 +1,12 @@
 package com.javayg.log.monitor.common.component;
 
-import com.javayg.log.monitor.common.constant.LogLevel;
-import com.javayg.log.monitor.common.entity.log.Log;
-import com.javayg.log.monitor.common.exception.UnknownLogLevelException;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.classic.spi.StackTraceElementProxy;
+import com.javayg.common.constant.LogLevel;
+import com.javayg.common.entity.CallChain;
+import com.javayg.common.entity.Log;
+import com.javayg.common.exception.UnknownLogLevelException;
 import org.springframework.stereotype.Component;
 
 import java.nio.ByteBuffer;
@@ -26,6 +30,9 @@ public class LogParsing {
         // 日志级别
         byte level = buffer.get();
         logInfo.setLevel(LogLevel.getLogLevel(level));
+        // 调用链
+        CallChain callChain = new CallChain(buffer);
+        logInfo.setCallChain(callChain);
         // 类名
         int loggerNameLen = buffer.getInt();
         byte[] loggerNameBytes = new byte[loggerNameLen];

@@ -1,15 +1,15 @@
 package com.javayg.log.monitor.common.component;
 
 import cn.hutool.core.lang.Assert;
-import com.javayg.log.monitor.common.constant.Command;
-import com.javayg.log.monitor.common.entity.log.Log;
-import com.javayg.log.monitor.common.entity.net.RegistrationParams;
-import com.javayg.log.monitor.common.entity.net.Response;
-import com.javayg.log.monitor.common.entity.net.Status;
-import com.javayg.log.monitor.common.entity.net.wapper.VariableLengthString;
+import com.javayg.common.constant.Command;
+import com.javayg.common.constant.Status;
+import com.javayg.common.entity.Log;
+import com.javayg.common.entity.RegistrationParams;
+import com.javayg.common.entity.Response;
+import com.javayg.common.exception.UnknownLogLevelException;
+import com.javayg.common.utils.ByteUtils;
+import com.javayg.common.wrapper.VariableLengthString;
 import com.javayg.log.monitor.common.exception.LogParserException;
-import com.javayg.log.monitor.common.exception.UnknownLogLevelException;
-import com.javayg.log.monitor.common.utils.ByteUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -90,6 +90,7 @@ public class LogConnect extends Thread {
 
                             // 将客户端信息处理后发送给日志中继器
                             Log logInfo = resolve.resolve(payloadBuffer);
+                            log.info("调用链：{}", logInfo);
                             webLogRepeater.logHandler(logInfo, clientId);
                             log.debug("日志已处理");
                         } else if (command == Command.CLIENT_CLOSE.getCode()) {

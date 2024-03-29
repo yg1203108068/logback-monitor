@@ -1,8 +1,8 @@
 package com.javayg.starter.interceptor;
 
+import com.javayg.common.entity.CallChain;
 import com.javayg.starter.connect.ClientContext;
 import com.javayg.starter.constant.RpcHeaderNames;
-import com.javayg.starter.entity.CallChain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.stereotype.Component;
@@ -34,12 +34,13 @@ public class MonitorHandlerInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String prevClientId = request.getHeader(RpcHeaderNames.SENDER_CLIENT_ID);
         String mainCallChainId = request.getHeader(RpcHeaderNames.MAIN_CALL_CHAIN_ID);
+        String pathInfo = request.getServletPath();
         // 调用链ID
         String callChainId = UUID.randomUUID().toString();
         if (mainCallChainId == null || mainCallChainId.trim().isEmpty()) {
-            clientContext.getCallChainInfo().set(new CallChain(prevClientId, callChainId, callChainId));
+            clientContext.getCallChainInfo().set(new CallChain(prevClientId, callChainId, callChainId, pathInfo));
         } else {
-            clientContext.getCallChainInfo().set(new CallChain(prevClientId, callChainId, mainCallChainId));
+            clientContext.getCallChainInfo().set(new CallChain(prevClientId, callChainId, mainCallChainId, pathInfo));
         }
         return HandlerInterceptor.super.preHandle(request, response, handler);
     }

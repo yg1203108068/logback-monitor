@@ -17,6 +17,7 @@
         <option value="$PROJECT_DIR$/t1/pom.xml" />
         <option value="$PROJECT_DIR$/logback-monitor-server-test/pom.xml" />
         <option value="$PROJECT_DIR$/logback-monitor-server/pom.xml" />
+        <option value="$PROJECT_DIR$/logback-monitor-common/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

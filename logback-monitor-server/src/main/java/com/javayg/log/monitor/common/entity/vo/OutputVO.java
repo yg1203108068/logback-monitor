@@ -1,6 +1,6 @@
 package com.javayg.log.monitor.common.entity.vo;
 
-import com.javayg.log.monitor.common.entity.log.Log;
+import com.javayg.common.entity.Log;
 import lombok.Data;
 
 /**

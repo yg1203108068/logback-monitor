@@ -2,13 +2,13 @@ package com.javayg.starter.connect;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import com.javayg.starter.constant.Command;
-import com.javayg.starter.constant.Status;
-import com.javayg.starter.entity.Log;
-import com.javayg.starter.entity.RegistrationParams;
-import com.javayg.starter.entity.Response;
+import com.javayg.common.constant.Command;
+import com.javayg.common.constant.Status;
+import com.javayg.common.entity.Log;
+import com.javayg.common.entity.RegistrationParams;
+import com.javayg.common.entity.Response;
+import com.javayg.common.exception.ResponseUnknownException;
 import com.javayg.starter.exception.FixSocketException;
-import com.javayg.starter.exception.ResponseUnknownException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -130,7 +130,6 @@ public class LogbackSender {
     /**
      * 监听服务端的消息
      *
-     * @param inputStream 服务端输入流
      * @date 2024/3/28
      * @author YangGang
      */

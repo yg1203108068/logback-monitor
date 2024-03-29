@@ -1,7 +1,7 @@
 package com.javayg.log.monitor.common.controller.log;
 
+import com.javayg.common.entity.RegistrationParams;
 import com.javayg.log.monitor.common.component.ModuleManager;
-import com.javayg.log.monitor.common.entity.net.RegistrationParams;
 import com.javayg.log.monitor.common.entity.vo.RestApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -22,7 +22,6 @@ public class MonitorFeignRequestInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
-        log.info("添加请求头");
         template.header(RpcHeaderNames.SENDER_CLIENT_ID, clientContext.getClientId());
         template.header(RpcHeaderNames.MAIN_CALL_CHAIN_ID, clientContext.getCallChainInfo().get().getId());
     }
