@@ -7,6 +7,7 @@ import com.javayg.common.entity.Log;
 import com.javayg.starter.connect.ClientContext;
 import com.javayg.starter.connect.LogbackSender;
 import com.javayg.starter.entity.MonitorProperties;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * logback 日志 分析平台 推送 追加器
@@ -15,6 +16,7 @@ import com.javayg.starter.entity.MonitorProperties;
  * @date 2024/2/29
  * @description 负责向 日志分析平台 推送日志数据
  */
+@Slf4j
 public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
     /**
@@ -62,21 +64,16 @@ public class LogbackMonitorAppender extends UnsynchronizedAppenderBase<ILoggingE
         if (sender != null) {
             sender.stop();
         }
-        addInfo("日志监控推送 Appender 已终止");
+        log.debug("日志监控推送 Appender 已终止");
         super.stop();
     }
 
     @Override
     protected void append(ILoggingEvent eventObject) {
         if (!isStarted()) {
-            addWarn("远程日志追加器尚未启动");
+            log.debug("远程日志追加器尚未启动");
         }
         CallChain callChain = clientContext.getCallChainInfo().get();
-        if (callChain != null) {
-            addInfo("callChain.getId()             " + callChain.getId());
-            addInfo("callChain.getMainId()   " + callChain.getMainId());
-            addInfo("callChain.getPrevClientId()   " + callChain.getPrevClientId());
-        }
         Log logInfo = new Log(eventObject,callChain);
         sender.send(logInfo);
     }

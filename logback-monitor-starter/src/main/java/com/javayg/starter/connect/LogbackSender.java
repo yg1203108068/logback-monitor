@@ -104,7 +104,6 @@ public class LogbackSender {
             return;
         }
         // 缺少配置项，提示
-        appender.addWarn("请检查接收方配置：logback.monitor.host 和 logback.monitor.port");
     }
 
     /**

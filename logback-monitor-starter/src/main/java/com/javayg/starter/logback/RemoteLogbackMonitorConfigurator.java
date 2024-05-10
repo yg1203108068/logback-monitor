@@ -43,7 +43,9 @@ public class RemoteLogbackMonitorConfigurator implements GenericApplicationListe
         if (event instanceof ApplicationContextInitializedEvent) {
             init((ApplicationContextInitializedEvent) event);
         } else if (event instanceof ContextClosedEvent) {
-            close();
+            if (logbackMonitorAppender != null) {
+                close();
+            }
         }
     }
 
@@ -63,6 +65,11 @@ public class RemoteLogbackMonitorConfigurator implements GenericApplicationListe
         Logger log = loggerContext.getLogger("ROOT");
 
         MonitorProperties prop = new MonitorProperties(environment);
+        if (prop.getHost() == null || prop.getHost().isEmpty() || prop.getPort() == null || prop.getPort() == 0) {
+            log.warn("您添加了 logback-monitor 依赖但没有发现配置,请检查接收方配置：logback.monitor.host 和 logback.monitor.port");
+            return;
+        }
+
         clientContext = new ClientContext(environment);
         logbackMonitorAppender = new LogbackMonitorAppender(prop, clientContext);
         logbackMonitorAppender.setContext(loggerContext);

@@ -2,6 +2,7 @@
 
 ## 介绍
 logback-monitor-starter 是一个用于远程监控和管理 Logback 日志系统的工具。这个启动器扩展了 Logback 的功能，允许用户通过一个独立的、远程的监控界面来查看、分析和控制日志行为，而不需要直接访问应用程序的运行环境。
+![img.png](./readme/img.png)
 
 ## 主要功能：
 ### 远程监控：
@@ -66,4 +67,4 @@ logback:
 
 #### 常见问题
 
-1.  如果 starter 启动失败，可以考虑在 logback.xml 中修改 `<configuration>` 添加 debug 属性。改为 `<configuration debug="true">`
+1.  如果 starter 启动失败，可以考虑在 logback.xml 中修改 `<configuration>` 添加 debug 属性。改为 `<configuration debug="true">`重启项目，检查日志组件的错误。
