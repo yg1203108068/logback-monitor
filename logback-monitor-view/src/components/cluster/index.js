@@ -18,7 +18,7 @@ let serverJoinCheckIntervalId;
 const logComponents = {}
 let eventSource;
 let noticed = [];
-export default class ColonyLog extends React.Component {
+export default class ClusterLog extends React.Component {
     state = {
         tabs: [],
         loading: true,
@@ -43,7 +43,7 @@ export default class ColonyLog extends React.Component {
     }
 
     load = () => {
-        axiosUtils.get("/api/colony/list", (data: LogWindow[]) => {
+        axiosUtils.get("/api/cluster/list", (data: LogWindow[]) => {
             let tabs = [];
             data.map(item => {
                 let key = `Log-Tab-${item.serverId}`, label,
@@ -105,11 +105,15 @@ export default class ColonyLog extends React.Component {
 
         try {
             eventSource = new EventSource(`/api/log/output`);
-
+            eventSource.onerror(e => {
+                console.log(e);
+                console.log("SSE 已关闭 == ==>")
+            });
             eventSource.addEventListener("message", event => {
                 try {
                     let logResponse: LogResponse = JSON.parse(event.data);
-                    if (logResponse.status === STATUS.SUCCESS) {
+                    console.log(logResponse)
+                    if (logResponse.messageType === STATUS.SUCCESS) {
                         //判断窗口是否已经渲染
                         if (logComponents[logResponse.serverId] === undefined) {
                             return
@@ -121,6 +125,8 @@ export default class ColonyLog extends React.Component {
                             time: new Date(logResponse.data.timeStamp).toLocaleString()
                         };
                         logComponents[logResponse.serverId](log)
+                    } else if (logResponse.messageType === STATUS.HEARTBEAT) {
+                        console.log("心跳 +1", logResponse)
                     } else {
                         console.log("被丢弃的日志信息：", logResponse)
                         let now = new Date();
@@ -130,7 +136,7 @@ export default class ColonyLog extends React.Component {
                             timeStamp: timeStamp,
                             time: now.toLocaleString(),
                             level: 16,
-                            message: `错误代码：${logResponse.status}, 错误消息：${logResponse.msg}`
+                            message: `错误代码：${logResponse.messageType}, 错误消息：${logResponse.msg}`
                         })
                     }
                 } catch (e) {

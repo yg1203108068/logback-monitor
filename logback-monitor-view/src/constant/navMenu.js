@@ -4,7 +4,7 @@ import type {TreeNode} from "../utils/treeUtils";
 import {toFlatTree} from "../utils/treeUtils";
 import UserManager from "../components/user";
 import ShowLogger from "../components/log";
-import ColonyLog from "../components/colony";
+import ClusterLog from "../components/cluster";
 
 export interface NavProp {
     /**
@@ -41,17 +41,17 @@ export const navMenu: NavProp[] = [
         link: "/log",
         component: <ShowLogger key={"WITHOUT_DELAY_LOG"}/>
     }, {
-        key: "COLONY_LOG",
+        key: "CLUSTER_LOG",
         label: "集群架构",
         icon: <ApartmentOutlined />,
-        link: "/colony",
-        component: <ColonyLog key={"Colony_Log"}/>
+        link: "/cluster",
+        component: <ClusterLog key={"CLUSTER_LOG"}/>
     },{
         key: "DISTRIBUTED_LOG",
         label: "分布式架构",
         icon: <DeploymentUnitOutlined />,
         link: "/distributed",
-        component: <ColonyLog key={"Colony_Log"}/>
+        component: <ClusterLog key={"CLUSTER_LOG"}/>
     }, {
         key: "USER_LIST",
         label: "用户管理",

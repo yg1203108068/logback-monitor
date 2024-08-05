@@ -90,7 +90,7 @@ public class LogConnect extends Thread {
 
                             // 将客户端信息处理后发送给日志中继器
                             Log logInfo = resolve.resolve(payloadBuffer);
-                            log.info("调用链：{}", logInfo);
+                            log.debug("调用链：{}", logInfo);
                             webLogRepeater.logHandler(logInfo, clientId);
                             log.debug("日志已处理");
                         } else if (command == Command.CLIENT_CLOSE.getCode()) {

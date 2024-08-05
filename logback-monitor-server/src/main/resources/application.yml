@@ -42,6 +42,7 @@ url-access-limit:
     - /api/logout
     - /api/log/*
     - /api/user/*
+    - /api/cluster/*
 initPassword: 123456
 uploadDir: upload
 trace: false

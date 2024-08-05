@@ -51,9 +51,9 @@ export default class LoginBuffer extends React.Component {
 
     render() {
         const {loginStatus} = this.state;
-        if (loginStatus == LoginStatus.unvalidated) {
-            return <div style={{width: "100%", height: "100%", paddingTop: "50px", textAlign: "center"}}><Spin tip="正在登录..." size="large"/></div>
-        } else if (loginStatus == LoginStatus.logout) {
+        if (loginStatus === LoginStatus.unvalidated) {
+            return <Spin tip={"正在登录..."} size="large" style={{width: "100%", height: "100%", marginTop: "50px", textAlign: "center"}}>登录校验</Spin>
+        } else if (loginStatus === LoginStatus.logout) {
             return <Login loginSuccess={this.loginSuccess}/>
         } else {
             return <BrowserRouter><AppLayout/></BrowserRouter>

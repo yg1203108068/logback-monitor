@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/colony")
-public class ColonyController {
+@RequestMapping("/api/cluster")
+public class ClusterController {
     @Autowired
     private ModuleManager moduleManager;
 

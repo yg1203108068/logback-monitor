@@ -4,8 +4,13 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.javayg.common.entity.Log;
+import com.javayg.log.monitor.common.constant.PushMessageType;
+import com.javayg.log.monitor.common.entity.vo.HeartbeatVo;
 import com.javayg.log.monitor.common.entity.vo.OutputVO;
+import com.javayg.log.monitor.common.entity.vo.PushMessage;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.FluxSink;
 
@@ -15,6 +20,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 日志中继器
@@ -26,10 +34,23 @@ import java.util.Map;
 @Component
 @Slf4j
 public class WebLogRepeater extends OutputStream {
+    @Autowired
+    ModuleManager moduleManager;
     //    private static WebLogRepeater outputStream;
     private final Map<String, FluxSink<String>> clients = new LinkedHashMap<>();
     // key：客户端Id，value：接入时间
     private final Map<String, Long> timer = new HashMap<>();
+    // 心跳器
+    private final static ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
+
+    @PostConstruct
+    public void init() {
+        scheduled.scheduleAtFixedRate(() -> {
+            Integer[] ids = moduleManager.arrayModuleIds();
+            heartbeat(ids);
+        }, 5, 1, TimeUnit.SECONDS);
+    }
+
 
     public void addClient(String id, FluxSink<String> client) {
         if (clients.size() >= 10) {
@@ -63,7 +84,7 @@ public class WebLogRepeater extends OutputStream {
      * @author YangGang
      * @description
      */
-    public void write(OutputVO vo) {
+    public void write(PushMessage vo) {
         if (CollectionUtil.isNotEmpty(clients.values())) {
             Iterator<String> iterator = clients.keySet().iterator();
             while (iterator.hasNext()) {
@@ -89,7 +110,7 @@ public class WebLogRepeater extends OutputStream {
      */
     public void logHandler(Log logInfo, int serverId) {
         OutputVO vo = new OutputVO();
-        vo.setStatus(200);
+        vo.setMessageType(PushMessageType.NORMAL);
         vo.setData(logInfo);
         vo.setServerId(serverId);
         write(vo);
@@ -113,7 +134,7 @@ public class WebLogRepeater extends OutputStream {
      */
     public void error(String msg) {
         OutputVO vo = new OutputVO();
-        vo.setStatus(500);
+        vo.setMessageType(PushMessageType.ERROR);
         vo.setMsg(msg);
         write(vo);
     }
@@ -128,9 +149,21 @@ public class WebLogRepeater extends OutputStream {
      */
     public void warn(String msg) {
         OutputVO vo = new OutputVO();
-        vo.setStatus(501);
+        vo.setMessageType(PushMessageType.WARN);
         vo.setMsg(msg);
         write(vo);
+    }
+
+    /**
+     * 推送一个心跳包
+     *
+     * @date 2024/3/4
+     * @author YangGang
+     * @description
+     */
+    public void heartbeat(Integer[] modelIdsList) {
+        HeartbeatVo heartbeatVo = new HeartbeatVo(modelIdsList);
+        write(heartbeatVo);
     }
 
 }

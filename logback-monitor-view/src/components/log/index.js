@@ -15,15 +15,16 @@ export type Log = {
 }
 
 export const STATUS = {
-    SUCCESS: 200,
-    ERROR: 500,
-    WARN: 501
+    SUCCESS: 'NORMAL',
+    HEARTBEAT: 'HEARTBEAT',
+    ERROR: 'ERROR',
+    WARN: 'WARN'
 }
 
 export type LogResponse = {
     data: Log,// 日志数据
     msg: string, // 响应消息
-    status: number, // 响应状态
+    messageType: number, // 消息类型
     serverId: number, // 推送这条消息的服务id
 }
 export const LogLevelColor = {
@@ -103,18 +104,19 @@ export default class ShowLogger extends Component<{}> {
 
         try {
             eventSource = new EventSource(`/api/log/output`);
-
             eventSource.addEventListener("message", event => {
                 const {socketErrorLog} = this.state;
                 try {
                     let logResponse: LogResponse = JSON.parse(event.data);
-                    if (logResponse.status === STATUS.SUCCESS) {
+                    if (logResponse.messageType === STATUS.SUCCESS) {
                         let log: Log = {
                             ...logResponse.data,
                             key: `${logResponse.serverId}-${logData.length}`,
                             time: new Date(logResponse.data.timeStamp).toLocaleString()
                         };
                         logData.push(log);
+                    } else if (logResponse.messageType === STATUS.HEARTBEAT) {
+                        console.log("心跳 +1", logResponse)
                     } else {
                         socketErrorLog.push(`错误代码：${logResponse.status}, 错误消息：${logResponse.msg}`);
                         this.setState({socketErrorLog});

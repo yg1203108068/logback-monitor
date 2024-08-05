@@ -1,6 +1,7 @@
 package com.javayg.log.monitor.common.entity.vo;
 
 import com.javayg.common.entity.Log;
+import com.javayg.log.monitor.common.constant.PushMessageType;
 import lombok.Data;
 
 /**
@@ -10,15 +11,15 @@ import lombok.Data;
  * @date 2024/3/4
  */
 @Data
-public class OutputVO {
+public class OutputVO implements PushMessage {
     /**
      * 日志信息
      */
     private Log data;
     /**
-     * 状态码
+     * 消息类型
      */
-    private int status;
+    private PushMessageType messageType;
     /**
      * 消息
      */

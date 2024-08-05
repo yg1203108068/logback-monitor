@@ -106,7 +106,7 @@
   "devDependencies": {
     "@ant-design/icons": "^5.0.1",
     "@ant-design/pro-components": "^2.3.19",
-    "antd": "^5.15.3",
+    "antd": "^5.17.4",
     "nprogress": "^0.2.0",
     "pubsub-js": "^1.9.4"
   }

@@ -30,7 +30,7 @@ export const myUploadProps: UploadProps = {
         }
     },
     onRemove(info) {
-        //todo 删除文件
+        //删除文件
         console.log("文件被删除", info)
     }
 };
